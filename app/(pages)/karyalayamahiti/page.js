@@ -1,10 +1,11 @@
+import Shakha from '@/app/Components/Cardclickpage/Shakha'
 import React from 'react'
-import Home from './Components/Dashboard/Home'
 
 const page = () => {
   return (
     <div>
-      <Home />
+      <Shakha />
+
     </div>
   )
 }
