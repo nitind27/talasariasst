@@ -23,7 +23,7 @@ const Question = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-yellow-50 via-white to-blue-100 p-4">
       <div className="w-full max-w-md rounded-3xl shadow-2xl px-6 py-10 bg-white/90 border border-gray-200 backdrop-blur-lg animate-fadeIn">
         <h1 className="text-2xl md:text-3xl font-bold mb-6 text-center text-blue-800 drop-shadow-sm animate-slideDown">
-          प्रश्नाउत्तरी
+          प्रश्नोत्तरे
         </h1>
         <div className="flex flex-col gap-6">
           {questionOptions.map((option, idx) => (

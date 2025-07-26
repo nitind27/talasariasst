@@ -14,7 +14,7 @@ const SLIDE_INTERVAL = 5000; // auto-slide every 5 seconds
 const navigationItems = [
   { label: "कार्यालय माहिती", icon: "🏢", href: "/karyalayamahiti" },
   { label: "शाखा", icon: "📂", href: "/shakha" },
-  { label: "प्रश्नाउत्तरी", icon: "❓", href: "/questions" },
+  { label: "प्रश्नोत्तरे", icon: "❓", href: "/questions" },
   { label: "महत्वाचे संपर्क", icon: "📞", href: "/mahatvache-sparsh" },
 ];
 
