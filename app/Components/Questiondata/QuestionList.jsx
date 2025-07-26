@@ -73,7 +73,7 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
     if (marathiVoice) utter.voice = marathiVoice;
     else if (hindiVoice) utter.voice = hindiVoice;
     utter.lang = marathiVoice ? "mr-IN" : "hi-IN";
-    utter.rate = 0.96;
+    utter.rate = 0.7;
     utter.pitch = 1.01;
 
     setSpeakingIdx(idx);
@@ -179,8 +179,8 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
                   tabIndex={0}
                   className="rounded-lg bg-gradient-to-r from-yellow-100 to-blue-50 p-4 shadow text-gray-900 font-medium text-base sm:text-lg"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <span className="flex-1">{q.replace(/^प्रश्न\s*\d+:/, "").trim()}</span>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer">
+                    <span className="flex-1" onClick={() => toggleAnswer(idx)}>{q.replace(/^प्रश्न\s*\d+:/, "").trim()}</span>
                     {hasAnswer && (
                       <div className="flex items-center gap-2">
                         <button
@@ -196,7 +196,7 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
                             <>
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5"
+                                className="h-5 w-5 cursor-pointer"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -204,21 +204,14 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
                               >
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                               </svg>{" "}
-                              उत्तर लपवा
+                              
                             </>
                           ) : (
                             <>
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                              >
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                              </svg>{" "}
-                              उत्तर दाखवा
+                              <span className="cursor-pointer">
+
+                              उत्तर
+                              </span>
                             </>
                           )}
                         </button>
