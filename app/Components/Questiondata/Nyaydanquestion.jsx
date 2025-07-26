@@ -85,7 +85,7 @@ const questions = [
 const Nyaydanquestion = () => {
     
     return (
-        <><QuestionList questions={questions} title="न्यायदान विषयक प्रश्न ने" /></>
+        <><QuestionList questions={questions} title="न्यायदान विषयक प्रश्नोत्तरे" /></>
     );
 };
 

@@ -119,7 +119,7 @@ const questions = [
 const Bharasquestion = () => {
 
     return (
-        <><QuestionList questions={questions} title="भारास कायदा विषयक प्रश्न ने" /></>
+        <><QuestionList questions={questions} title="भारास कायदा विषयक प्रश्नोत्तरे" /></>
     );
 };
 
