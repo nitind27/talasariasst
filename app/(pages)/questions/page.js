@@ -1,11 +1,10 @@
-import Shakha from '../../Components/Cardclickpage/Shakha'
+import Question from '../../Components/Questions/Question'
 import React from 'react'
 
 const page = () => {
   return (
     <div>
-      <Shakha />
-
+      <Question />
     </div>
   )
 }
