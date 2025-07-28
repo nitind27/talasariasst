@@ -58,31 +58,101 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
   }, []);
 
   // Play answer as Marathi TTS
-  const speakAnswer = (idx, answer) => {
-    if (!("speechSynthesis" in window)) return alert("Speech synthesis not supported in this browser.");
-    window.speechSynthesis.cancel(); // Stop anything previous
-    const utter = new window.SpeechSynthesisUtterance(answer);
-    utterRef.current = utter;
-    // Marathi or Hindi voice preference
-    const marathiVoice = voices.find((v) =>
-      v.lang === "mr-IN" || (v.lang && v.lang.startsWith("mr"))
+const speakAnswer = (idx, answer) => {
+  if (!("speechSynthesis" in window)) {
+    alert("Speech synthesis not supported in this browser.");
+    return;
+  }
+  window.speechSynthesis.cancel();
+  const utter = new window.SpeechSynthesisUtterance(answer);
+  utterRef.current = utter;
+
+  // Log all available voices for debugging
+  console.log("Available voices:", voices.map(v => ({
+    name: v.name,
+    lang: v.lang,
+    voiceURI: v.voiceURI,
+    gender: v.gender
+  })));
+
+  // Try to explicitly match known good female voices by name
+  // (include as many known combinations as possible for target languages)
+  const preferredVoiceNames = [
+    "Google मराठी",            // Google's Marathi female
+    "Google हिन्दी",            // Google's Hindi female
+    "Google Hindi (India)",
+    "Google हिंदी (भारत)",
+    "Google female",            // fallback
+    "Microsoft Heera Desktop - Hindi (India)",
+    "Microsoft Kalpana Desktop - Hindi (India)"
+  ];
+
+  // First: search for exact preferred voice names
+  let selectedVoice = voices.find(
+    v =>
+      (v.lang && (v.lang === "mr-IN" || v.lang.startsWith("mr"))) &&
+      preferredVoiceNames.some(name => v.name === name)
+  );
+
+  // Second: any Marathi female voice, by keywords
+  if (!selectedVoice) {
+    selectedVoice = voices.find(
+      v =>
+        (v.lang && (v.lang === "mr-IN" || v.lang.startsWith("mr"))) &&
+        (
+          (v.gender && v.gender.toLowerCase() === "female") ||
+          /female|woman|स्त्री|महिला|महिलां/i.test(v.name)
+        )
     );
-    const hindiVoice = voices.find((v) =>
-      v.lang === "hi-IN" || (v.lang && v.lang.startsWith("hi"))
+  }
+
+  // Third: any Marathi voice
+  if (!selectedVoice) {
+    selectedVoice = voices.find(
+      v => v.lang === "mr-IN" || (v.lang && v.lang.startsWith("mr"))
     );
-    if (marathiVoice) utter.voice = marathiVoice;
-    else if (hindiVoice) utter.voice = hindiVoice;
-    utter.lang = marathiVoice ? "mr-IN" : "hi-IN";
-    utter.rate = 0.7;
-    utter.pitch = 1.01;
+  }
 
-    setSpeakingIdx(idx);
+  // Fourth: Hindi female, by preferred name or keyword
+  if (!selectedVoice) {
+    selectedVoice = voices.find(
+      v =>
+        (v.lang && (v.lang === "hi-IN" || v.lang.startsWith("hi"))) &&
+        (
+          preferredVoiceNames.some(name => v.name === name) ||
+          (v.gender && v.gender.toLowerCase() === "female") ||
+          /female|woman|स्त्री|महिला|mahila/i.test(v.name)
+        )
+    );
+  }
 
-    utter.onend = () => setSpeakingIdx(null);
-    utter.onerror = () => setSpeakingIdx(null);
+  // Fifth: Any Hindi voice
+  if (!selectedVoice) {
+    selectedVoice = voices.find(
+      v => v.lang === "hi-IN" || (v.lang && v.lang.startsWith("hi"))
+    );
+  }
 
-    window.speechSynthesis.speak(utter);
-  };
+  // Fallback: first available voice
+  if (!selectedVoice && voices.length) {
+    selectedVoice = voices[0];
+  }
+
+  if (selectedVoice) {
+    utter.voice = selectedVoice;
+    utter.lang = selectedVoice.lang;
+  }
+
+  utter.rate = 0.7;
+  utter.pitch = 1.01;
+  setSpeakingIdx(idx);
+
+  utter.onend = () => setSpeakingIdx(null);
+  utter.onerror = () => setSpeakingIdx(null);
+
+  window.speechSynthesis.speak(utter);
+};
+
 
   // STOP speech
   const stopSpeaking = () => {

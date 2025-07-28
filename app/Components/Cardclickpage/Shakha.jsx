@@ -37,7 +37,7 @@ const puravathaList = [
   },
   {
     name: "दुय्यम शिधापत्रिका काढण्यासाठी लागणारी आवश्यक कागदपत्र",
-    pdfPath: "/Pdf/purvatha/.pdf",
+    pdfPath: "/Pdf/purvatha/2.pdf",
   },
   {
     name: "शिधापत्रिकेत नाव समाविष्ट करण्यासाठी लागणारी आवश्यक कागदपत्",
