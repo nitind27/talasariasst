@@ -58,101 +58,91 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
   }, []);
 
   // Play answer as Marathi TTS
-const speakAnswer = (idx, answer) => {
-  if (!("speechSynthesis" in window)) {
-    alert("Speech synthesis not supported in this browser.");
-    return;
-  }
-  window.speechSynthesis.cancel();
-  const utter = new window.SpeechSynthesisUtterance(answer);
-  utterRef.current = utter;
+  const speakAnswer = (idx, answer) => {
+    if (!("speechSynthesis" in window)) {
+      alert("Speech synthesis not supported in this browser.");
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utter = new window.SpeechSynthesisUtterance(answer);
+    utterRef.current = utter;
 
-  // Log all available voices for debugging
-  console.log("Available voices:", voices.map(v => ({
-    name: v.name,
-    lang: v.lang,
-    voiceURI: v.voiceURI,
-    gender: v.gender
-  })));
+    // Log all available voices for debugging
+    console.log(
+      "Available voices:",
+      voices.map((v) => ({
+        name: v.name,
+        lang: v.lang,
+        voiceURI: v.voiceURI,
+        gender: v.gender,
+      }))
+    );
 
-  // Try to explicitly match known good female voices by name
-  // (include as many known combinations as possible for target languages)
-  const preferredVoiceNames = [
-    "Google मराठी",            // Google's Marathi female
-    "Google हिन्दी",            // Google's Hindi female
-    "Google Hindi (India)",
-    "Google हिंदी (भारत)",
-    "Google female",            // fallback
-    "Microsoft Heera Desktop - Hindi (India)",
-    "Microsoft Kalpana Desktop - Hindi (India)"
-  ];
+    const preferredVoiceNames = [
+      "Google मराठी",
+      "Google हिन्दी",
+      "Google Hindi (India)",
+      "Google हिंदी (भारत)",
+      "Google female",
+      "Microsoft Heera Desktop - Hindi (India)",
+      "Microsoft Kalpana Desktop - Hindi (India)",
+    ];
 
-  // First: search for exact preferred voice names
-  let selectedVoice = voices.find(
-    v =>
-      (v.lang && (v.lang === "mr-IN" || v.lang.startsWith("mr"))) &&
-      preferredVoiceNames.some(name => v.name === name)
-  );
-
-  // Second: any Marathi female voice, by keywords
-  if (!selectedVoice) {
-    selectedVoice = voices.find(
-      v =>
+    let selectedVoice = voices.find(
+      (v) =>
         (v.lang && (v.lang === "mr-IN" || v.lang.startsWith("mr"))) &&
-        (
-          (v.gender && v.gender.toLowerCase() === "female") ||
-          /female|woman|स्त्री|महिला|महिलां/i.test(v.name)
-        )
+        preferredVoiceNames.some((name) => v.name === name)
     );
-  }
 
-  // Third: any Marathi voice
-  if (!selectedVoice) {
-    selectedVoice = voices.find(
-      v => v.lang === "mr-IN" || (v.lang && v.lang.startsWith("mr"))
-    );
-  }
+    if (!selectedVoice) {
+      selectedVoice = voices.find(
+        (v) =>
+          (v.lang && (v.lang === "mr-IN" || v.lang.startsWith("mr"))) &&
+          ((v.gender && v.gender.toLowerCase() === "female") ||
+            /female|woman|स्त्री|महिला|महिलां/i.test(v.name))
+      );
+    }
 
-  // Fourth: Hindi female, by preferred name or keyword
-  if (!selectedVoice) {
-    selectedVoice = voices.find(
-      v =>
-        (v.lang && (v.lang === "hi-IN" || v.lang.startsWith("hi"))) &&
-        (
-          preferredVoiceNames.some(name => v.name === name) ||
-          (v.gender && v.gender.toLowerCase() === "female") ||
-          /female|woman|स्त्री|महिला|mahila/i.test(v.name)
-        )
-    );
-  }
+    if (!selectedVoice) {
+      selectedVoice = voices.find(
+        (v) => v.lang === "mr-IN" || (v.lang && v.lang.startsWith("mr"))
+      );
+    }
 
-  // Fifth: Any Hindi voice
-  if (!selectedVoice) {
-    selectedVoice = voices.find(
-      v => v.lang === "hi-IN" || (v.lang && v.lang.startsWith("hi"))
-    );
-  }
+    if (!selectedVoice) {
+      selectedVoice = voices.find(
+        (v) =>
+          (v.lang && (v.lang === "hi-IN" || v.lang.startsWith("hi"))) &&
+          (preferredVoiceNames.some((name) => v.name === name) ||
+            (v.gender && v.gender.toLowerCase() === "female") ||
+            /female|woman|स्त्री|महिला|mahila/i.test(v.name))
+      );
+    }
 
-  // Fallback: first available voice
-  if (!selectedVoice && voices.length) {
-    selectedVoice = voices[0];
-  }
+    if (!selectedVoice) {
+      selectedVoice = voices.find(
+        (v) => v.lang === "hi-IN" || (v.lang && v.lang.startsWith("hi"))
+      );
+    }
 
-  if (selectedVoice) {
-    utter.voice = selectedVoice;
-    utter.lang = selectedVoice.lang;
-  }
+    if (!selectedVoice && voices.length) {
+      selectedVoice = voices[0];
+    }
 
-  utter.rate = 0.7;
-  utter.pitch = 1.01;
-  setSpeakingIdx(idx);
+    if (selectedVoice) {
+      utter.voice = selectedVoice;
+      utter.lang = selectedVoice.lang;
+    }
 
-  utter.onend = () => setSpeakingIdx(null);
-  utter.onerror = () => setSpeakingIdx(null);
+    utter.rate = 0.7;
+    utter.pitch = 1.01;
+    setSpeakingIdx(idx);
 
-  window.speechSynthesis.speak(utter);
-};
+    utter.onend = () => setSpeakingIdx(null);
+    utter.onerror = () => setSpeakingIdx(null);
 
+    window.speechSynthesis.speak(utter);
+  };
 
   // STOP speech
   const stopSpeaking = () => {
@@ -187,6 +177,16 @@ const speakAnswer = (idx, answer) => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-yellow-50 via-white to-blue-100 p-4">
       <div className="w-full max-w-3xl rounded-3xl shadow-2xl px-6 py-10 bg-white/90 border border-gray-200 backdrop-blur-lg animate-fadeIn">
+
+        {/* Back Button */}
+        <button
+          onClick={() => window.history.back()}
+          className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          aria-label="मागील पृष्ठावर परत जा"
+        >
+          मागील पृष्ठ
+        </button>
+
         <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center text-blue-800 drop-shadow-sm animate-slideDown">
           {title}
         </h1>
@@ -238,7 +238,7 @@ const speakAnswer = (idx, answer) => {
         </div>
         <div className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto pr-2">
           {filteredQuestions.length > 0 ? (
-            filteredQuestions.map((q, filteredIdx) => {
+            filteredQuestions.map((q) => {
               const idx = questions.indexOf(q);
               const hasAnswer = answers && answers[idx];
               const isVisible = visibleAnswers.has(idx);
@@ -250,14 +250,16 @@ const speakAnswer = (idx, answer) => {
                   className="rounded-lg bg-gradient-to-r from-yellow-100 to-blue-50 p-4 shadow text-gray-900 font-medium text-base sm:text-lg"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer">
-                    <span className="flex-1" onClick={() => toggleAnswer(idx)}>{q.replace(/^प्रश्न\s*\d+:/, "").trim()}</span>
+                    <span className="flex-1" onClick={() => toggleAnswer(idx)}>
+                      {q.replace(/^प्रश्न\s*\d+:/, "").trim()}
+                    </span>
                     {hasAnswer && (
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => toggleAnswer(idx)}
                           className={`text-blue-700 font-semibold hover:text-blue-900 focus:outline-none group flex items-center gap-1 px-3 py-1 rounded-md border border-blue-600 transition-colors duration-200
-                          ${isVisible ? "bg-blue-200" : "bg-blue-50"}
-                        `}
+                            ${isVisible ? "bg-blue-200" : "bg-blue-50"}
+                          `}
                           type="button"
                           aria-expanded={isVisible}
                           aria-controls={`answer-${idx}`}
@@ -274,19 +276,17 @@ const speakAnswer = (idx, answer) => {
                               >
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                               </svg>{" "}
-                              
                             </>
                           ) : (
                             <>
                               <span className="cursor-pointer">
-
-                              उत्तर
+                                उत्तर
                               </span>
                             </>
                           )}
                         </button>
-                        {isVisible && (
-                          speakingIdx === idx ? (
+                        {isVisible &&
+                          (speakingIdx === idx ? (
                             <button
                               onClick={stopSpeaking}
                               type="button"
@@ -318,8 +318,7 @@ const speakAnswer = (idx, answer) => {
                                 <path d="M12 3a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V4a1 1 0 0 1 1-1Zm6.07 3.93a1 1 0 0 1 1.41 0a9 9 0 0 1 0 12.73a1 1 0 1 1-1.41-1.41a7 7 0 0 0 0-9.91a1 1 0 0 1 0-1.41ZM18 12a1 1 0 0 1 2 0a10 10 0 0 1-3.29 7.5a1 1 0 1 1-1.41-1.41A8 8 0 0 0 18 12ZM6.93 5.93a1 1 0 0 1 0 1.41a7 7 0 0 0 0 9.91a1 1 0 1 1-1.41 1.41a9 9 0 0 1 0-12.73a1 1 0 0 1 1.41 0ZM6 12a1 1 0 0 1 2 0a8 8 0 0 0 2 5.5a1 1 0 1 1-1.41 1.41A10 10 0 0 1 6 12Zm6 7a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0v-2a1 1 0 0 1 1-1Z" />
                               </svg>
                             </button>
-                          )
-                        )}
+                          ))}
                       </div>
                     )}
                   </div>
