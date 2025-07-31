@@ -4,9 +4,9 @@ import { useRouter } from "next/navigation"; // For Next.js 13+ App Router
 
 // Example image URLs
 const images = [
-  "/Slider/t1.jpg",
-  "/Slider/t1.jpg",
-  "/Slider/t1.jpg",
+  "/Slider/imgslider.jpeg",
+  "/Slider/imgslider.jpeg",
+  "/Slider/imgslider.jpeg",
 ];
 
 const SLIDE_INTERVAL = 5000; // auto-slide every 5 seconds
