@@ -16,6 +16,7 @@ const navigationItems = [
   { label: "शाखा", icon: "📂", href: "/shakha" },
   { label: "प्रश्नोत्तरे", icon: "❓", href: "/questions" },
   { label: "महत्वाचे संपर्क", icon: "📞", href: "/mahatvache-sparsh" },
+  { label: "व्याख्या", icon: "💡", href: "/krushiyear" },
 ];
 
 const FullPageImageSliderWithCard = () => {
@@ -111,7 +112,7 @@ const FullPageImageSliderWithCard = () => {
                   type="button"
                   tabIndex={0}
                   onClick={() => handleClick(item.href, i)}
-                  className={`group bg-white shadow-xl rounded-xl h-24 w-24 sm:h-28 sm:w-28 flex flex-col items-center justify-center text-center text-gray-800 font-semibold transition-all duration-300 border-2 border-white hover:border-blue-500 hover:-translate-y-2 hover:scale-105 hover:bg-gradient-to-br hover:from-blue-100 hover:to-indigo-100 hover:shadow-2xl hover:text-blue-700 focus:outline-none
+                  className={`group bg-white shadow-xl rounded-xl h-24 w-24 sm:h-28 sm:w-28 flex flex-col items-center justify-center text-center text-gray-800 font-semibold transition-all duration-300 border-2 border-white hover:border-blue-500 hover:-translate-y-2 hover:scale-105 hover:bg-gradient-to-br hover:from-blue-100 hover:to-indigo-100 hover:shadow-2xl hover:text-blue-700 focus:outline-none cursor-pointer
                     ${
                       clickedIndex === i
                         ? "animate-glow-click"
