@@ -113,7 +113,7 @@ const answers = {
 const Krishiquestion = () => {
 
     return (
-        <><QuestionList questions={questions} title="कृषी कायदा विषयक प्रश्नोत्तरे"  answers={answers} /></>
+        <><QuestionList questions={questions} title="कुळ कायदा विषयक प्रश्न"  answers={answers} /></>
     );
 };
 

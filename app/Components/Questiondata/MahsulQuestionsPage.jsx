@@ -778,7 +778,7 @@ const answers = {
 const MahsulQuestionsPage = () => {
 
   return (
-    <><QuestionList questions={questions} title="महसूल विषयक प्रश्नोत्तरे" answers={answers} /></>
+    <><QuestionList questions={questions} title="महसूल विषयक प्रश्न" answers={answers} /></>
   );
 };
 

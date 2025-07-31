@@ -196,6 +196,18 @@ const ShakhaGrid = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-500 p-6">
+      {/* Back Button */}
+      <div className="absolute top-6 left-6 z-10">
+        <button
+          className="flex items-center gap-2 bg-white hover:bg-gray-100 text-gray-700 rounded-lg px-4 py-3 shadow-md border border-gray-300 transition-all duration-200 font-medium text-base no-underline"
+          onClick={() => window.history.back()}
+          aria-label="मागील पृष्ठ"
+        >
+          <BackIcon />
+          <span className="text-base font-medium">मागील पृष्ठ</span>
+        </button>
+      </div>
+
       <div className="w-full max-w-4xl flex flex-col gap-10">
         <h1 className="text-3xl font-bold text-center text-white drop-shadow-sm mb-6 flex items-center justify-center gap-2 animate-fadeIn">
           शाखा

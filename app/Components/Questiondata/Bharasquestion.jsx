@@ -229,7 +229,7 @@ const answers = {
 const Bharasquestion = () => {
 
   return (
-    <><QuestionList questions={questions} title="भारास कायदा विषयक प्रश्नोत्तरे" answers={answers}/></>
+    <><QuestionList questions={questions} title="वारसा विषयक प्रश्न" answers={answers}/></>
   );
 };
 
