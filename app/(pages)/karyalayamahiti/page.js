@@ -1,11 +1,11 @@
-// import Shakha from '@/app/Components/Cardclickpage/Shakha'
+import Karyalaya from '../../Components/Cardclickpage/Karyalaya'
 import React from 'react'
 
 const page = () => {
   return (
     <div>
       {/* <Shakha /> */}
-
+      <Karyalaya />
     </div>
   )
 }
