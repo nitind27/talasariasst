@@ -122,26 +122,27 @@ u
   },
 ];
 
+// Fixed puravathaList with correct PDF paths
 const puravathaList = [
   {
     name: "विभक्त शिधापत्रिका काढण्यासाठी लागणारी आवश्यक कागदपत्र",
-    imgPath: "/images/purvatha/1.jpg",
+    pdfPath: "/Pdf/purvatha/1.pdf",
   },
   {
     name: "दुय्यम शिधापत्रिका काढण्यासाठी लागणारी आवश्यक कागदपत्र",
-    imgPath: "/images/purvatha/2.jpg",
+    pdfPath: "/Pdf/purvatha/2.pdf",
   },
   {
     name: "शिधापत्रिकेत नाव समाविष्ट करण्यासाठी लागणारी आवश्यक कागदपत्",
-    imgPath: "/images/purvatha/3.jpg",
+    pdfPath: "/Pdf/purvatha/3.pdf",
   },
   {
     name: "नवीन शिधापत्रिका काढण्यासाठी लागणारी आवश्यक कागदपत्र",
-    imgPath: "/images/purvatha/4.jpg",
+    pdfPath: "/Pdf/purvatha/4.pdf",
   },
   {
     name: "शिधापत्रिकेतून नाव काढण्यासाठी लागणारी आवश्यक कागदपत्",
-    imgPath: "/images/purvatha/5.jpg",
+    pdfPath: "/Pdf/purvatha/5.pdf",
   },
 ];
 
@@ -200,6 +201,79 @@ const BackIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
   </svg>
 );
+
+// PDF Viewer Component
+const PDFViewer = ({ onBack, src, title }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const handleLoad = () => {
+    setIsLoading(false);
+  };
+
+  const handleError = () => {
+    setError("PDF लोड करण्यात त्रुटी आली आहे");
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-gradient-to-br from-blue-100 to-blue-200 z-50 flex flex-col">
+      <div className="flex items-center px-4 pt-4 pb-2 bg-white/80 shadow-lg">
+        <button
+          className="flex items-center gap-1 bg-white/95 hover:bg-blue-50 text-blue-700 rounded-lg px-4 py-2 shadow border border-blue-100 transition-all duration-200 group"
+          onClick={onBack}
+          aria-label="Back"
+        >
+          <BackIcon />
+          <span className="text-base font-medium group-hover:underline">बॅक</span>
+        </button>
+        <span className="ml-4 font-bold text-lg text-blue-900">{title}</span>
+        <a
+          href={src}
+          download
+          className="ml-auto flex items-center gap-2 px-4 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg shadow border border-green-200 transition-all duration-200"
+          aria-label="Download PDF"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span className="text-sm font-medium">डाउनलोड</span>
+        </a>
+      </div>
+      <div className="flex-1 w-full flex items-center justify-center overflow-auto p-6">
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p className="text-blue-700 font-medium">PDF लोड होत आहे...</p>
+          </div>
+        )}
+        {error && (
+          <div className="flex flex-col items-center justify-center">
+            <div className="text-red-600 mb-4">
+              <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <p className="text-red-700 font-medium">{error}</p>
+            <button
+              onClick={() => window.open(src, '_blank')}
+              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              ब्राउझर मध्ये उघडा
+            </button>
+          </div>
+        )}
+        <iframe
+          src={`${src}#toolbar=1&navpanes=1&scrollbar=1`}
+          className={`w-full h-full rounded-lg shadow-lg border-0 ${isLoading || error ? 'hidden' : ''}`}
+          onLoad={handleLoad}
+          onError={handleError}
+          title={title}
+        />
+      </div>
+    </div>
+  );
+};
 
 const ImageViewerFull = ({ onBack, src, title, content }) => {
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -276,11 +350,17 @@ const ImageViewerFull = ({ onBack, src, title, content }) => {
               )}
             </svg>
             <span className="text-sm font-medium">
+            
               {isSpeaking ? "थांबवा" : "वाचा"}
+
             </span>
+
           </button>
+
         )}
+
       </div>
+
       <div className="flex-1 w-full flex items-center justify-center overflow-auto p-6">
         <Zoom>
           <img
@@ -307,6 +387,7 @@ const ShakhaGrid = () => {
   const router = useRouter();
   const [selected, setSelected] = useState(null);
   const [showImage, setShowImage] = useState(null);
+  const [showPDF, setShowPDF] = useState(null);
   const rows = [];
   for (let i = 0; i < sections.length; i += 3) rows.push(sections.slice(i, i + 3));
 
@@ -315,8 +396,11 @@ const ShakhaGrid = () => {
   };
 
   const DetailCard = ({ section, onBack }) => {
-    const imageSections = ["संगायो शाखा", "पुरवठा शाखा"];
+    const imageSections = ["संगायो शाखा"];
+    const pdfSections = ["पुरवठा शाखा"];
     const hasImages = imageSections.includes(section.title) && section.pdfMap;
+    const hasPDFs = pdfSections.includes(section.title) && section.pdfMap;
+    
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-fadeIn">
         <div className={`relative w-full max-w-md mx-auto rounded-3xl bg-gradient-to-br ${section.color} px-6 py-10 shadow-2xl border border-gray-200`}>
@@ -337,7 +421,7 @@ const ShakhaGrid = () => {
                     key={item}
                     className={
                       "rounded-lg px-4 py-2 bg-white/80 text-gray-900 font-semibold shadow " +
-                      (hasImages
+                      (hasImages || hasPDFs
                         ? "hover:bg-green-100 hover:text-green-700 cursor-pointer transition duration-200"
                         : "hover:bg-blue-100 hover:text-blue-700 transition duration-200")
                     }
@@ -348,6 +432,12 @@ const ShakhaGrid = () => {
                             title: item,
                             path: section.pdfMap[idx]?.imgPath,
                             content: section.pdfMap[idx]?.contant,
+                          })
+                        : hasPDFs
+                        ? () =>
+                          setShowPDF({
+                            title: item,
+                            path: section.pdfMap[idx]?.pdfPath,
                           })
                         : undefined
                     }
@@ -423,6 +513,13 @@ const ShakhaGrid = () => {
           title={showImage.title}
           content={showImage.content}
           onBack={() => setShowImage(null)}
+        />
+      )}
+      {showPDF && (
+        <PDFViewer
+          src={showPDF.path}
+          title={showPDF.title}
+          onBack={() => setShowPDF(null)}
         />
       )}
       <style>{`
