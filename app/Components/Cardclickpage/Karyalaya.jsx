@@ -347,7 +347,7 @@ const Karyalaya = () => {
             <button
               onClick={startReading}
               disabled={voiceLoading}
-              className={`px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105 ${
+              className={`px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105  ${
                 voiceLoading 
                   ? 'bg-gray-400 cursor-not-allowed' 
                   : 'bg-green-500 hover:bg-green-600 text-white'
@@ -415,13 +415,7 @@ const Karyalaya = () => {
         </div>
 
         {/* Voice Info */}
-        {voice && (
-          <div className="text-center text-sm text-gray-600 mb-4">
-            <p>उपलब्ध आवाज: {voice.name} ({voice.lang})</p>
-            {voice.gender && <p>लिंग: {voice.gender === 'female' ? 'स्त्री' : 'पुरुष'}</p>}
-          </div>
-        )}
-
+  
         {/* Loading Indicator */}
         {voiceLoading && (
           <div className="text-center text-sm text-blue-600 mb-4">
@@ -430,7 +424,7 @@ const Karyalaya = () => {
         )}
 
         {/* Title */}
-        <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
+        <h1 className="text-3xl font-bold text-center text-gray-800 mt-10 md:mt-0">
           तलासरी तालुका माहिती
         </h1>
 
