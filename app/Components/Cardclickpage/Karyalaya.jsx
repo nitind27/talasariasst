@@ -40,7 +40,7 @@ const Karyalaya = () => {
       const voices = window.speechSynthesis.getVoices();
       setAvailableVoices(voices);
       setVoiceLoading(false);
-      
+
       if (voices.length > 0) {
         // Log available voices for debugging
         console.log('Available voices:', voices.map(v => ({
@@ -63,21 +63,21 @@ const Karyalaya = () => {
           "Google हिंदी (भारत)"
         ];
 
-        selectedVoice = voices.find(v => 
+        selectedVoice = voices.find(v =>
           (v.lang === 'mr-IN' || v.lang.startsWith('mr')) &&
           marathiFemaleNames.some(name => v.name.includes(name))
         );
 
         // Strategy 2: Find any Marathi voice
         if (!selectedVoice) {
-          selectedVoice = voices.find(v => 
+          selectedVoice = voices.find(v =>
             v.lang === 'mr-IN' || v.lang.startsWith('mr')
           );
         }
 
         // Strategy 3: Find Hindi female voice (good for Marathi)
         if (!selectedVoice) {
-          selectedVoice = voices.find(v => 
+          selectedVoice = voices.find(v =>
             (v.lang === 'hi-IN' || v.lang.startsWith('hi')) &&
             (v.gender === 'female' || /female|woman|स्त्री|महिला|mahila/i.test(v.name))
           );
@@ -85,14 +85,14 @@ const Karyalaya = () => {
 
         // Strategy 4: Find any Hindi voice
         if (!selectedVoice) {
-          selectedVoice = voices.find(v => 
+          selectedVoice = voices.find(v =>
             v.lang === 'hi-IN' || v.lang.startsWith('hi')
           );
         }
 
         // Strategy 5: Find any female voice
         if (!selectedVoice) {
-          selectedVoice = voices.find(v => 
+          selectedVoice = voices.find(v =>
             (v.gender && v.gender.toLowerCase() === 'female') ||
             /female|woman|स्त्री|महिला|mahila/i.test(v.name)
           );
@@ -126,7 +126,7 @@ const Karyalaya = () => {
       clearTimeout(timeoutId);
       loadVoices();
     };
-    
+
     // Initial load
     loadVoices();
 
@@ -185,7 +185,7 @@ const Karyalaya = () => {
       const textToSpeak = convertDigitsToMarathiWords(marathiContent);
 
       const utterance = new window.SpeechSynthesisUtterance(textToSpeak);
-      
+
       // Enhanced voice and language settings
       if (voice) {
         utterance.voice = voice;
@@ -196,7 +196,7 @@ const Karyalaya = () => {
         utterance.lang = 'mr-IN';
         console.log('Using fallback language: mr-IN');
       }
-      
+
       // Optimized speech parameters for Marathi
       utterance.rate = 0.75; // Slower for better pronunciation
       utterance.pitch = 1.1; // Slightly higher pitch for female-like sound
@@ -207,33 +207,33 @@ const Karyalaya = () => {
         setIsPaused(false);
         console.log('Speech started');
       };
-      
+
       utterance.onend = () => {
         setIsReading(false);
         setIsPaused(false);
         speechRef.current = null;
         console.log('Speech ended');
       };
-      
+
       utterance.onpause = () => {
         setIsPaused(true);
         console.log('Speech paused');
       };
-      
+
       utterance.onresume = () => {
         setIsPaused(false);
         console.log('Speech resumed');
       };
-      
+
       utterance.onerror = (event) => {
         console.error('Speech synthesis error:', event);
         setIsReading(false);
         setIsPaused(false);
         speechRef.current = null;
-        
+
         // Detailed error handling
         let errorMessage = 'वाचण्यात त्रुटी आली. कृपया पुन्हा प्रयत्न करा.';
-        
+
         switch (event.error) {
           case 'not-allowed':
             errorMessage = 'वाचण्यासाठी परवानगी आवश्यक आहे. कृपया ब्राउझर सेटिंग्ज तपासा.';
@@ -256,13 +256,13 @@ const Karyalaya = () => {
           default:
             errorMessage = `वाचण्यात त्रुटी आली (${event.error}). कृपया पुन्हा प्रयत्न करा.`;
         }
-        
+
         alert(errorMessage);
       };
 
       speechRef.current = utterance;
       window.speechSynthesis.speak(utterance);
-      
+
     } catch (error) {
       console.error('Speech synthesis error:', error);
       alert('वाचण्यात त्रुटी आली. कृपया पुन्हा प्रयत्न करा.');
@@ -347,11 +347,10 @@ const Karyalaya = () => {
             <button
               onClick={startReading}
               disabled={voiceLoading}
-              className={`px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105  ${
-                voiceLoading 
-                  ? 'bg-gray-400 cursor-not-allowed' 
+              className={`px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105  ${voiceLoading
+                  ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-green-500 hover:bg-green-600 text-white'
-              }`}
+                }`}
               title={voiceLoading ? "आवाज लोड होत आहे..." : "वाचा सुरू करा"}
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -415,7 +414,7 @@ const Karyalaya = () => {
         </div>
 
         {/* Voice Info */}
-  
+
         {/* Loading Indicator */}
         {voiceLoading && (
           <div className="text-center text-sm text-blue-600 mb-4">
@@ -429,9 +428,25 @@ const Karyalaya = () => {
         </h1>
 
         {/* Marathi Content */}
-        <div className="text-justify text-gray-700 leading-relaxed space-y-4 whitespace-pre-line">
-          {marathiContent}
+        <div className="text-justify text-gray-700 leading-relaxed space-y-4">
+          {marathiContent.split('\n').map((line, idx) => {
+            // Bold the section headers
+            if (
+              line.trim() === "मतदार संघ" ||
+              line.trim() === "भौगोलिक माहीती-" ||
+              line.trim() === "सांस्कृतिक वारसा"
+            ) {
+              return (
+                <div key={idx}>
+                  <span className="font-bold text-lg">{line.trim()}</span>
+                </div>
+              );
+            }
+            // Normal paragraph
+            return <div key={idx} className="whitespace-pre-line">{line}</div>;
+          })}
         </div>
+
       </div>
     </div>
   );
