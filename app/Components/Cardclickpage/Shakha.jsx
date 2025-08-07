@@ -494,8 +494,11 @@ const ShakhaGrid = () => {
                   type="button"
                 >
                   <div className="mb-4 text-5xl drop-shadow animate-pop">
+                    {
+                      section.title == "पुरवठा शाखा" &&
+                      < img src={section.img} alt="पुरवठा शाखा" className="w-20"/>
+                    }
                     {section.icon}
-                    <img src={section.img} alt="पुरवठा शाखा" />
                   </div>
                   <div className="text-xl sm:text-2xl md:text-2xl text-gray-900 group-hover:text-blue-700 transition">
                     {section.title}
