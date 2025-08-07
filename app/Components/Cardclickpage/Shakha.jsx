@@ -133,7 +133,7 @@ const puravathaList = [
     pdfPath: "/Pdf/purvatha/2.pdf",
   },
   {
-    name: "शिधापत्रिकेत नाव समाविष्ट करण्यासाठी लागणारी आवश्यक कागदपत्",
+    name: "शिधापत्रिकेत नाव समाविष्ट करण्यासाठी लागणारी आवश्यक कागदपत्र",
     pdfPath: "/Pdf/purvatha/3.pdf",
   },
   {
@@ -141,7 +141,7 @@ const puravathaList = [
     pdfPath: "/Pdf/purvatha/4.pdf",
   },
   {
-    name: "शिधापत्रिकेतून नाव काढण्यासाठी लागणारी आवश्यक कागदपत्",
+    name: "शिधापत्रिकेतून नाव काढण्यासाठी लागणारी आवश्यक कागदपत्र",
     pdfPath: "/Pdf/purvatha/5.pdf",
   },
 ];
@@ -167,7 +167,8 @@ const sections = [
   },
   {
     title: "पुरवठा शाखा",
-    icon: "⚙️",
+    // icon: "⚙️",
+    img: "/cardimage/card1purvatha.png",
     color: "from-blue-100 to-blue-200",
     info: puravathaList.map(s => s.name),
     pdfMap: puravathaList,
@@ -350,7 +351,7 @@ const ImageViewerFull = ({ onBack, src, title, content }) => {
               )}
             </svg>
             <span className="text-sm font-medium">
-            
+
               {isSpeaking ? "थांबवा" : "वाचा"}
 
             </span>
@@ -400,7 +401,7 @@ const ShakhaGrid = () => {
     const pdfSections = ["पुरवठा शाखा"];
     const hasImages = imageSections.includes(section.title) && section.pdfMap;
     const hasPDFs = pdfSections.includes(section.title) && section.pdfMap;
-    
+
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-fadeIn">
         <div className={`relative w-full max-w-md mx-auto rounded-3xl bg-gradient-to-br ${section.color} px-6 py-10 shadow-2xl border border-gray-200`}>
@@ -434,12 +435,12 @@ const ShakhaGrid = () => {
                             content: section.pdfMap[idx]?.contant,
                           })
                         : hasPDFs
-                        ? () =>
-                          setShowPDF({
-                            title: item,
-                            path: section.pdfMap[idx]?.pdfPath,
-                          })
-                        : undefined
+                          ? () =>
+                            setShowPDF({
+                              title: item,
+                              path: section.pdfMap[idx]?.pdfPath,
+                            })
+                          : undefined
                     }
                   >
                     {idx + 1}) {item}
@@ -494,6 +495,7 @@ const ShakhaGrid = () => {
                 >
                   <div className="mb-4 text-5xl drop-shadow animate-pop">
                     {section.icon}
+                    <img src={section.img} alt="पुरवठा शाखा" />
                   </div>
                   <div className="text-xl sm:text-2xl md:text-2xl text-gray-900 group-hover:text-blue-700 transition">
                     {section.title}
