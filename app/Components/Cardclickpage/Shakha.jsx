@@ -282,12 +282,14 @@ const ImageViewerFull = ({ onBack, src, title, content }) => {
   const utteranceRef = useRef(null);
 
   useEffect(() => {
-    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-    return () => {
-      window.speechSynthesis.onvoiceschanged = null;
-    };
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+      return () => { window.speechSynthesis.onvoiceschanged = null; };
+    } else {
+      setVoices([]);
+    }
   }, []);
 
   const speakText = () => {

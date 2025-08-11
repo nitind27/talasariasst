@@ -43,17 +43,18 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
   const [voices, setVoices] = useState([]);
   useEffect(() => {
     const handleVoicesChanged = () => {
-      setVoices(window.speechSynthesis.getVoices() ?? []);
+      setVoices(window.speechSynthesis?.getVoices?.() ?? []);
     };
-    if ("speechSynthesis" in window) {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.onvoiceschanged = handleVoicesChanged;
       handleVoicesChanged();
     }
     return () => {
       if (recognitionRef.current) recognitionRef.current.abort();
-      window.speechSynthesis.cancel();
-      if ("speechSynthesis" in window)
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
         window.speechSynthesis.onvoiceschanged = null;
+      }
     };
   }, []);
 
