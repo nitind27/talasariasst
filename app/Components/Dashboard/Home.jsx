@@ -15,8 +15,8 @@ const navigationItems = [
   { label: "कार्यालय माहिती", icon: "🏢", href: "/karyalayamahiti" },
   { label: "शाखा", icon: "📂", href: "/shakha" },
   { label: "प्रश्नोत्तरे", icon: "❓", href: "/questions" },
-  { label: "महत्वाचे संपर्क", icon: "📞", href: "/mahatvache-sparsh" },
-  { label: "व्याख्या", icon: "💡", href: "/krushiyear" },
+  // { label: "महत्वाचे संपर्क", icon: "📞", href: "/mahatvache-sparsh" },
+  // { label: "व्याख्या", icon: "💡", href: "/krushiyear" },
 ];
 
 const FullPageImageSliderWithCard = () => {
