@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
+import "./QuestionList.css";
 
 const normalize = (str) => str.normalize("NFC").replace(/\s+/g, "").toLowerCase();
 
@@ -176,22 +177,22 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
   }, [search]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-yellow-50 via-white to-blue-100 p-4">
-      <div className="w-full max-w-3xl rounded-3xl shadow-2xl px-6 py-10 bg-white/90 border border-gray-200 backdrop-blur-lg animate-fadeIn">
+    <div className="question-list-container">
+      <div className="question-list-card">
 
         {/* Back Button */}
         <button
           onClick={() => window.history.back()}
-          className="mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+          className="back-button"
           aria-label="मागील पृष्ठावर परत जा"
         >
           मागील पृष्ठ
         </button>
 
-        <h1 className="text-3xl md:text-4xl font-bold mb-6 text-center text-blue-800 drop-shadow-sm animate-slideDown">
+        <h1 className="question-list-title">
           {title}
         </h1>
-        <div className="mb-6 flex items-center gap-2">
+        <div className="search-container">
           <input
             type="text"
             lang="mr"
@@ -201,24 +202,16 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="मराठीत शोधा किंवा शब्द टाका..."
-            className="w-full rounded-lg border border-blue-300 px-4 py-3 bg-white/90 shadow focus:ring-2 focus:ring-blue-200 text-lg font-semibold text-gray-900 transition placeholder-gray-400"
-            style={{
-              fontFamily:
-                "'Noto Sans Devanagari', 'Lohit Marathi', 'Devanagari', Arial, sans-serif",
-            }}
+            className="search-input"
           />
           <button
             type="button"
             aria-label={listening ? "माइक सक्रिय आहे..." : "माइकने मराठीत बोला"}
             onClick={startListening}
-            className={`flex items-center justify-center rounded-full border-2 border-blue-400 bg-white transition-all duration-150 shadow ${
-              listening ? "bg-blue-100 border-blue-600 animate-pulse" : "hover:bg-blue-50"
-            }`}
-            style={{ width: 48, height: 48 }}
+            className={`mic-button ${listening ? "listening" : ""}`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className={`h-7 w-7 ${listening ? "text-blue-600" : "text-blue-400"}`}
               fill={listening ? "currentColor" : "none"}
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -232,13 +225,13 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
             </svg>
           </button>
         </div>
-        <div className="text-xs text-gray-500 mt-[-14px] mb-4 ml-1">
+        <div className="search-help">
           शोधण्यासाठी मराठीत टाइप करा किंवा माइक क्लिक करा
           {/* {listening
             ? "आपण बोलू शकता... (मराठी भाषेसाठी Google/Android ब्राउझर उत्तम)"
             : "शोधण्यासाठी मराठीत टाइप करा किंवा माइक क्लिक करा; माईक चालू करण्यासाठी ब्राउझरला परवानगी द्या."} */}
         </div>
-        <div className="flex flex-col gap-4 max-h-[70vh] overflow-y-auto pr-2">
+        <div className="questions-container">
           {filteredQuestions.length > 0 ? (
             filteredQuestions.map((q) => {
               const idx = questions.indexOf(q);
@@ -249,19 +242,17 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
                 <div
                   key={idx}
                   tabIndex={0}
-                  className="rounded-lg bg-gradient-to-r from-yellow-100 to-blue-50 p-4 shadow text-gray-900 font-medium text-base sm:text-lg"
+                  className="question-item"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 cursor-pointer">
-                    <span className="flex-1" onClick={() => toggleAnswer(idx)}>
+                  <div className="question-content">
+                    <span className="question-text" onClick={() => toggleAnswer(idx)}>
                       {q.replace(/^प्रश्न\s*\d+:/, "").trim()}
                     </span>
                     {hasAnswer && (
-                      <div className="flex items-center gap-2">
+                      <div className="audio-controls">
                         <button
                           onClick={() => toggleAnswer(idx)}
-                          className={`text-blue-700 font-semibold hover:text-blue-900 focus:outline-none group flex items-center gap-1 px-3 py-1 rounded-md border border-blue-600 transition-colors duration-200
-                            ${isVisible ? "bg-blue-200" : "bg-blue-50"}
-                          `}
+                          className={`answer-button ${isVisible ? "visible" : ""}`}
                           type="button"
                           aria-expanded={isVisible}
                           aria-controls={`answer-${idx}`}
@@ -270,7 +261,6 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
                             <>
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 cursor-pointer"
                                 fill="none"
                                 viewBox="0 0 24 24"
                                 stroke="currentColor"
@@ -281,7 +271,7 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
                             </>
                           ) : (
                             <>
-                              <span className="cursor-pointer">
+                              <span>
                                 उत्तर
                               </span>
                             </>
@@ -293,11 +283,10 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
                               onClick={stopSpeaking}
                               type="button"
                               aria-label="बोलणे थांबवा"
-                              className="rounded-full p-2 border-2 border-red-400 transition duration-150 shadow bg-white hover:bg-red-100 flex items-center justify-center bg-red-50"
+                              className="audio-button stop"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 text-red-500"
                                 fill="currentColor"
                                 viewBox="0 0 24 24"
                               >
@@ -309,11 +298,10 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
                               onClick={() => speakAnswer(idx, answers[idx])}
                               type="button"
                               aria-label="उत्तर ऐका"
-                              className="rounded-full p-2 border-2 border-blue-400 transition duration-150 shadow bg-white hover:bg-blue-50 flex items-center justify-center"
+                              className="audio-button"
                             >
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5 text-blue-400"
                                 fill="currentColor"
                                 viewBox="0 0 24 24"
                               >
@@ -327,9 +315,7 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
                   {isVisible && hasAnswer && (
                     <div
                       id={`answer-${idx}`}
-                      className="mt-3 border-l-4 border-blue-600 bg-blue-50 p-4 rounded-md text-gray-800 shadow-inner animate-fadeIn"
-                      role="region"
-                      aria-live="polite"
+                      className="answer-display"
                     >
                       {answers[idx]}
                     </div>
@@ -338,24 +324,12 @@ const QuestionList = ({ questions, answers = {}, title = "प्रश्ना�
               );
             })
           ) : (
-            <div className="py-6 text-center text-xl text-gray-500 font-semibold">
+            <div className="no-results">
               कोणताही प्रश्न आढळला नाही.
             </div>
           )}
         </div>
       </div>
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: scale(0.98);}
-          to { opacity: 1; transform: scale(1);}
-        }
-        .animate-fadeIn { animation: fadeIn 0.3s cubic-bezier(.67,.21,.43,1.55);}
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-25px);}
-          to { opacity: 1; transform: translateY(0);}
-        }
-        .animate-slideDown { animation: slideDown 0.7s cubic-bezier(.67,.21,.43,1.55);}
-      `}</style>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Zoom from "react-medium-image-zoom";
 import "react-medium-image-zoom/dist/styles.css";
 import { useRouter } from "next/navigation";
+import "./shakha.css";
 
 // Schemes for "संगायो शाखा"
 const sangayoSchemes = [
@@ -61,7 +62,8 @@ un
 ४.अर्जदाराचे नांव असलेले आधारकार्डची छायांकित प्रत आवश्यक आहे . ( बँकेला आधारकार् लिंक करणे आवश्यक आहे.) 
 ५.अर्जदाराचे नांव असलेले बँक पास बुक छायांकित प्रत आवश्यक आहे 
 ६. घरपट्टी उतारा छायांकित प्रत आवश्यक आहे. 
-७. अर्जदाराच्या कुटुंबातील नाव असलेले ( शिधापत्रिका मधील) दारिद्रये रेषेखालील दाखला व नावाची यादीत नांव असणे आवश्यक आहे.`
+७. दिव्यागं किमान ८०१ पेक्ष जास्त असलेले प्रमाणपत्र जिल्हा शल्य चिकित्सक  ( सिव्हिल सर्जन ) यांचे प्रमाणपत्र बंधनकारक राहिल . ( अस्थिव्यंग, अंध , मुकबधिर , मतिमंद , कर्णबधिर इत्यादी प्रवर्गातील) 
+८. अर्जदाराच्या कुटुंबातील नाव असलेले (शिधापत्रिा मधील ) दारिद्रये रेषेखालील दाखला व नावाची यादीत नांव असणे आवश्यक आहे.`
   },
   {
     name: "इंदिरा गांधी राष्ट्रीय विधवा निवृत्तीवेतन योजना",
@@ -150,7 +152,7 @@ const sections = [
   {
     title: "महसूल शाखा",
     icon: "📜",
-    color: "from-yellow-100 to-yellow-200",
+    color: "gradient-yellow",
     info: [
       "जमीनबाब/गौणखनिज",
       "हक्कनोंद",
@@ -161,7 +163,7 @@ const sections = [
   {
     title: "संगायो शाखा",
     icon: "📂",
-    color: "from-green-100 to-green-200",
+    color: "gradient-green",
     info: sangayoSchemes.map(s => s.name),
     pdfMap: sangayoSchemes,
   },
@@ -169,20 +171,20 @@ const sections = [
     title: "पुरवठा शाखा",
     // icon: "⚙️",
     img: "/cardimage/card1purvatha.png",
-    color: "from-blue-100 to-blue-200",
+    color: "gradient-blue",
     info: puravathaList.map(s => s.name),
     pdfMap: puravathaList,
   },
   {
     title: "मग्रारोहयो",
     icon: "🏛️",
-    color: "from-pink-100 to-pink-200",
+    color: "gradient-pink",
     info: [],
   },
   {
     title: "प्रशासन",
     icon: "🗄️",
-    color: "from-purple-100 to-purple-200",
+    color: "gradient-purple",
     info: [
       "दाखले",
       "अभिलेख कक्ष",
@@ -192,13 +194,13 @@ const sections = [
   {
     title: "आवक जावक",
     icon: "✉️",
-    color: "from-orange-100 to-orange-200",
+    color: "gradient-orange",
     info: [],
   },
 ];
 
 const BackIcon = () => (
-  <svg className="h-7 w-7 text-gray-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+  <svg className="back-button-icon" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
   </svg>
 );
@@ -218,47 +220,47 @@ const PDFViewer = ({ onBack, src, title }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-blue-100 to-blue-200 z-50 flex flex-col">
-      <div className="flex items-center px-4 pt-4 pb-2 bg-white/80 shadow-lg">
+    <div className="pdf-viewer">
+      <div className="pdf-header">
         <button
-          className="flex items-center gap-1 bg-white/95 hover:bg-blue-50 text-blue-700 rounded-lg px-4 py-2 shadow border border-blue-100 transition-all duration-200 group"
+          className="pdf-back-button"
           onClick={onBack}
           aria-label="Back"
         >
           <BackIcon />
-          <span className="text-base font-medium group-hover:underline">बॅक</span>
+          <span className="back-button-text">बॅक</span>
         </button>
-        <span className="ml-4 font-bold text-lg text-blue-900">{title}</span>
+        <span className="pdf-title">{title}</span>
         <a
           href={src}
           download
-          className="ml-auto flex items-center gap-2 px-4 py-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg shadow border border-green-200 transition-all duration-200"
+          className="pdf-download-button"
           aria-label="Download PDF"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="pdf-download-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
-          <span className="text-sm font-medium">डाउनलोड</span>
+          <span className="pdf-download-text">डाउनलोड</span>
         </a>
       </div>
-      <div className="flex-1 w-full flex items-center justify-center overflow-auto p-6">
+      <div className="pdf-content">
         {isLoading && (
-          <div className="flex flex-col items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-            <p className="text-blue-700 font-medium">PDF लोड होत आहे...</p>
+          <div className="pdf-loading">
+            <div className="pdf-loading-spinner"></div>
+            <p className="pdf-loading-text">PDF लोड होत आहे...</p>
           </div>
         )}
         {error && (
-          <div className="flex flex-col items-center justify-center">
-            <div className="text-red-600 mb-4">
-              <svg className="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="pdf-error">
+            <div className="pdf-error-icon">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
-            <p className="text-red-700 font-medium">{error}</p>
+            <p className="pdf-error-text">{error}</p>
             <button
               onClick={() => window.open(src, '_blank')}
-              className="mt-4 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="pdf-error-button"
             >
               ब्राउझर मध्ये उघडा
             </button>
@@ -266,7 +268,7 @@ const PDFViewer = ({ onBack, src, title }) => {
         )}
         <iframe
           src={`${src}#toolbar=1&navpanes=1&scrollbar=1`}
-          className={`w-full h-full rounded-lg shadow-lg border-0 ${isLoading || error ? 'hidden' : ''}`}
+          className={`pdf-iframe ${isLoading || error ? 'hidden' : ''}`}
           onLoad={handleLoad}
           onError={handleError}
           title={title}
@@ -304,7 +306,6 @@ const ImageViewerFull = ({ onBack, src, title, content }) => {
       utter.rate = 0.88;
       utter.pitch = 1.08;
 
-      // Prefer Marathi female; fallback to Hindi/en/female, then last hope
       const preferred = voices.find(v => v.lang === "mr-IN" && v.name.toLowerCase().includes("female"));
       const marathi = voices.find(v => v.lang === "mr-IN");
       const hindiFemale = voices.find(v => v.lang === "hi-IN" && v.name.toLowerCase().includes("female"));
@@ -323,27 +324,24 @@ const ImageViewerFull = ({ onBack, src, title, content }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-green-100 to-green-200 z-50 flex flex-col">
-      <div className="flex items-center px-4 pt-4 pb-2 bg-white/80 shadow-lg">
+    <div className="image-viewer">
+      <div className="image-header">
         <button
-          className="flex items-center gap-1 bg-white/95 hover:bg-green-50 text-green-700 rounded-lg px-4 py-2 shadow border border-green-100 transition-all duration-200 group"
+          className="image-back-button"
           onClick={onBack}
           aria-label="Back"
         >
           <BackIcon />
-          <span className="text-base font-medium group-hover:underline">बॅक</span>
+          <span className="back-button-text">बॅक</span>
         </button>
-        <span className="ml-4 font-bold text-lg text-green-900">{title}</span>
+        <span className="image-title">{title}</span>
         {(content && content.length > 12) && (
           <button
             onClick={speakText}
-            className={`ml-auto flex items-center gap-2 px-4 py-2 rounded-lg shadow border transition-all duration-200 ${isSpeaking
-              ? "bg-red-100 hover:bg-red-200 text-red-700 border-red-200"
-              : "bg-green-100 hover:bg-green-200 text-green-700 border-green-200"
-              }`}
+            className={`image-speak-button ${isSpeaking ? 'speaking' : 'not-speaking'}`}
             aria-label={isSpeaking ? "थांबवा" : "वाचा"}
           >
-            <svg className={`w-5 h-5 ${isSpeaking ? "animate-pulse" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className={`image-speak-icon ${isSpeaking ? "animate-pulse" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
               {isSpeaking ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M18.364 5.636a9 9 0 11-12.728 0M12 17v4m-4 0h8" />
@@ -352,33 +350,18 @@ const ImageViewerFull = ({ onBack, src, title, content }) => {
                   d="M12 18v4m-4 0h8m4-8a8 8 0 10-16 0 8 8 0 0016 0z" />
               )}
             </svg>
-            <span className="text-sm font-medium">
-
+            <span className="image-speak-text">
               {isSpeaking ? "थांबवा" : "वाचा"}
-
             </span>
-
           </button>
-
         )}
-
       </div>
-
-      <div className="flex-1 w-full flex items-center justify-center overflow-auto p-6">
+      <div className="image-content">
         <Zoom>
           <img
             alt={title + " Image"}
             src={src}
-            className="rounded-lg shadow-lg"
-            style={{
-              display: "block",
-              width: "auto",
-              height: "auto",
-              objectFit: "contain",
-              maxWidth: "100%",
-              maxHeight: "80vh",
-              cursor: "zoom-in",
-            }}
+            className="image-zoom"
           />
         </Zoom>
       </div>
@@ -405,29 +388,24 @@ const ShakhaGrid = () => {
     const hasPDFs = pdfSections.includes(section.title) && section.pdfMap;
 
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm animate-fadeIn">
-        <div className={`relative w-full max-w-md mx-auto rounded-3xl bg-gradient-to-br ${section.color} px-6 py-10 shadow-2xl border border-gray-200`}>
+      <div className="detail-modal">
+        <div className={`detail-card ${section.color}`}>
           <button
-            className="absolute top-5 left-5 flex items-center gap-1 bg-white/90 hover:bg-blue-50 text-blue-700 rounded-lg px-4 py-2 shadow border border-blue-100 transition duration-200 group"
+            className="detail-card-back-button"
             onClick={onBack}
           >
             <BackIcon />
-            <span className="text-base font-medium group-hover:underline">बॅक</span>
+            <span className="back-button-text">बॅक</span>
           </button>
-          <div className="flex flex-col items-center mt-4">
-            <div className="text-4xl mb-2">{section.icon}</div>
-            <div className="text-2xl font-extrabold mb-4 text-gray-700">{section.title}</div>
+          <div className="detail-content">
+            <div className="detail-icon">{section.icon}</div>
+            <div className="detail-title">{section.title}</div>
             {section.info && section.info.length > 0 ? (
-              <ul className="mt-4 space-y-2 w-full max-h-[60vh] overflow-auto pr-2">
+              <ul className="detail-list">
                 {section.info.map((item, idx) => (
                   <li
                     key={item}
-                    className={
-                      "rounded-lg px-4 py-2 bg-white/80 text-gray-900 font-semibold shadow " +
-                      (hasImages || hasPDFs
-                        ? "hover:bg-green-100 hover:text-green-700 cursor-pointer transition duration-200"
-                        : "hover:bg-blue-100 hover:text-blue-700 transition duration-200")
-                    }
+                    className={`detail-list-item ${hasImages || hasPDFs ? 'pdf-hover' : ''}`}
                     onClick={
                       hasImages
                         ? () =>
@@ -450,7 +428,7 @@ const ShakhaGrid = () => {
                 ))}
               </ul>
             ) : (
-              <div className="mt-4 text-gray-700 italic">
+              <div className="detail-placeholder">
                 सदर शाखेसाठी तपशील लवकरच ...
               </div>
             )}
@@ -461,48 +439,41 @@ const ShakhaGrid = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-500 p-6">
+    <div className="shakha-container">
       {/* Back Button */}
-      <div className="w-full max-w-4xl mb-4">
+      <div className="back-button-container">
         <button
           onClick={handleBack}
-          className="flex items-center gap-2 bg-white/90 hover:bg-blue-50 text-blue-700 rounded-lg px-4 py-2 shadow border border-blue-100 transition-all duration-200 group"
+          className="back-button"
         >
           <BackIcon />
-          <span className="text-base font-medium group-hover:underline">मागील पृष्ठ</span>
+          <span className="back-button-text">मागील पृष्ठ</span>
         </button>
       </div>
 
-      <div className="w-full max-w-4xl flex flex-col gap-10">
-        <h1 className="text-3xl font-bold text-center text-white drop-shadow-sm mb-6 flex items-center justify-center gap-2 animate-fadeIn">
+      <div className="content-wrapper">
+        <h1 className="page-title animate-fadeIn">
           शाखा
         </h1>
-        <div className="w-full flex flex-col gap-10">
+        <div className="rows-container">
           {rows.map((row, rowIdx) => (
-            <div key={rowIdx} className="flex flex-row gap-8 justify-center">
+            <div key={rowIdx} className="row">
               {row.map((section, idx) => (
                 <button
                   key={section.title}
-                  className={`
-                    group flex-1 max-w-xs px-6 py-10
-                    rounded-3xl bg-gradient-to-br ${section.color}
-                    flex flex-col items-center justify-center shadow-2xl border border-gray-200
-                    text-gray-800 font-bold text-2xl transition-all duration-300
-                    hover:scale-105 hover:-translate-y-2 hover:shadow-[0_4px_30px_rgba(0,0,0,0.18)]
-                    outline-none focus:ring-4 focus:ring-blue-200
-                  `}
+                  className={`section-button ${section.color}`}
                   onClick={() => setSelected(rowIdx * 3 + idx)}
                   tabIndex={0}
                   type="button"
                 >
-                  <div className="mb-4 text-5xl drop-shadow animate-pop">
+                  <div className="section-icon animate-pop">
                     {
                       section.title == "पुरवठा शाखा" &&
-                      < img src={section.img} alt="पुरवठा शाखा" className="w-20"/>
+                      <img src={section.img} alt="पुरवठा शाखा" className="purvathaimage"/>
                     }
                     {section.icon}
                   </div>
-                  <div className="text-xl sm:text-2xl md:text-2xl text-gray-900 group-hover:text-blue-700 transition">
+                  <div className="section-title">
                     {section.title}
                   </div>
                 </button>
@@ -511,6 +482,7 @@ const ShakhaGrid = () => {
           ))}
         </div>
       </div>
+      
       {selected !== null && (
         <DetailCard section={sections[selected]} onBack={() => setSelected(null)} />
       )}
@@ -529,19 +501,6 @@ const ShakhaGrid = () => {
           onBack={() => setShowPDF(null)}
         />
       )}
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity:0; transform: translateY(20px);}
-          to { opacity:1; transform: translateY(0);}
-        }
-        .animate-fadeIn { animation:fadeIn 0.8s cubic-bezier(.67,.21,.43,1.55);}
-        @keyframes pop {
-         0% { transform: scale(1);}
-         60% { transform: scale(1.12);}
-         100% { transform: scale(1);}
-        }
-        .animate-pop { animation: pop 0.4s cubic-bezier(.61,-0.13,.54,1.23);}
-      `}</style>
     </div>
   );
 };

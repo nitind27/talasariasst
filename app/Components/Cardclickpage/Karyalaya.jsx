@@ -1,5 +1,6 @@
 'use client'
 import React, { useState, useRef, useEffect } from 'react';
+import './karyalaya.css';
 
 const Karyalaya = () => {
   const [isReading, setIsReading] = useState(false);
@@ -313,17 +314,17 @@ const Karyalaya = () => {
 
   if (!isSupported) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-6 relative">
+      <div className="error-container">
+        <div className="error-card">
           <button
             onClick={handleBack}
-            className="absolute top-4 left-4 text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded shadow"
+            className="back-button"
           >
             मागील पृष्ठ
           </button>
-          <div className="text-center text-red-600 mt-8">
-            <p className="text-lg font-semibold">आपल्या ब्राउझरमध्ये वाचण्याची सुविधा उपलब्ध नाही</p>
-            <p className="text-sm mt-2">कृपया Chrome, Firefox, किंवा Safari वापरा</p>
+          <div className="error-message">
+            <p className="error-title">आपल्या ब्राउझरमध्ये वाचण्याची सुविधा उपलब्ध नाही</p>
+            <p className="error-subtitle">कृपया Chrome, Firefox, किंवा Safari वापरा</p>
           </div>
         </div>
       </div>
@@ -331,29 +332,26 @@ const Karyalaya = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-6 relative">
+    <div className="karyalaya-container">
+      <div className="content-card">
         {/* Back Button */}
         <button
           onClick={handleBack}
-          className="absolute top-4 left-4 text-sm bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded shadow transition-colors"
+          className="back-button"
         >
           मागील पृष्ठ
         </button>
 
         {/* Audio Controls */}
-        <div className="absolute top-4 right-4 flex gap-2">
+        <div className="audio-controls">
           {!isReading ? (
             <button
               onClick={startReading}
               disabled={voiceLoading}
-              className={`px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105  ${voiceLoading
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-green-500 hover:bg-green-600 text-white'
-                }`}
+              className={`audio-button ${voiceLoading ? 'play-button-disabled' : 'play-button'}`}
               title={voiceLoading ? "आवाज लोड होत आहे..." : "वाचा सुरू करा"}
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="button-icon" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
                   d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
@@ -367,10 +365,10 @@ const Karyalaya = () => {
               {isPaused ? (
                 <button
                   onClick={resumeReading}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105"
+                  className="audio-button resume-button"
                   title="पुन्हा सुरू करा"
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="button-icon" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
                       d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
@@ -382,10 +380,10 @@ const Karyalaya = () => {
               ) : (
                 <button
                   onClick={pauseReading}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105"
+                  className="audio-button pause-button"
                   title="थांबवा"
                 >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="button-icon" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
                       d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
@@ -397,10 +395,10 @@ const Karyalaya = () => {
               )}
               <button
                 onClick={stopReading}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 transition-all duration-200 transform hover:scale-105"
+                className="audio-button stop-button"
                 title="पूर्ण थांबवा"
               >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <svg className="button-icon" fill="currentColor" viewBox="0 0 20 20">
                   <path
                     fillRule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
@@ -413,22 +411,20 @@ const Karyalaya = () => {
           )}
         </div>
 
-        {/* Voice Info */}
-
         {/* Loading Indicator */}
         {voiceLoading && (
-          <div className="text-center text-sm text-blue-600 mb-4">
+          <div className="loading-indicator">
             <p>आवाज लोड होत आहे...</p>
           </div>
         )}
 
         {/* Title */}
-        <h1 className="text-3xl font-bold text-center text-gray-800 mt-10 md:mt-0">
+        <h1 className="page-title">
           तलासरी तालुका माहिती
         </h1>
 
         {/* Marathi Content */}
-        <div className="text-justify text-gray-700 leading-relaxed space-y-4">
+        <div className="content-text">
           {marathiContent.split('\n').map((line, idx) => {
             // Bold the section headers
             if (
@@ -438,7 +434,7 @@ const Karyalaya = () => {
             ) {
               return (
                 <div key={idx}>
-                  <span className="font-bold text-lg">{line.trim()}</span>
+                  <span className="section-header">{line.trim()}</span>
                 </div>
               );
             }

@@ -1,0 +1,268 @@
+/* Main container */
+.home-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Slides container */
+.slides-container {
+  display: flex;
+  height: 100%;
+  transition: transform 0.7s;
+}
+
+/* Individual slide */
+.slide {
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+/* Navigation arrows container */
+.arrows-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 20;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Arrow buttons */
+.arrow-button {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
+  font-size: 1.5rem;
+  border-radius: 9999px;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  pointer-events: auto;
+}
+
+@media (min-width: 1024px) {
+  .arrow-button {
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.75rem;
+  }
+}
+
+@media (min-width: 1536px) {
+  .arrow-button {
+    width: 4rem;
+    height: 4rem;
+    font-size: 2rem;
+  }
+}
+
+/* Dots container */
+.dots-container {
+  position: absolute;
+  bottom: 3rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 20;
+}
+
+/* Dot buttons */
+.dot-button {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+  border-radius: 9999px;
+  width: 1rem;
+  height: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  border: 2px solid white;
+  transition: background-color 0.3s;
+}
+
+.dot-button.active {
+  background-color: white;
+}
+
+.dot-button.inactive {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Floating card container */
+.floating-card-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6rem;
+  z-index: 30;
+  pointer-events: none;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+/* Card wrapper */
+.card-wrapper {
+  pointer-events: auto;
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (min-width: 640px) {
+  .card-wrapper {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .card-wrapper {
+    padding-left: 8rem;
+    padding-right: 8rem;
+  }
+}
+
+/* Main card */
+.main-card {
+  background-color: var(--custom-color, #f3f4f6);
+  backdrop-filter: blur(16px);
+  width: 100%;
+  border-radius: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 2rem 1rem;
+  margin: 0 auto;
+  border: 1px solid #e5e7eb;
+  max-width: 900px;
+}
+
+@media (min-width: 640px) {
+  .main-card {
+    padding: 2rem 3rem;
+  }
+}
+
+/* Navigation buttons container */
+.nav-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 640px) {
+  .nav-buttons-container {
+    gap: 2rem;
+  }
+}
+
+/* Navigation button */
+.nav-button {
+  background-color: white;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border-radius: 0.75rem;
+  height: 6rem;
+  width: 6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #1f2937;
+  font-weight: 600;
+  transition: all 0.3s;
+  border: 2px solid white;
+  outline: none;
+  cursor: pointer;
+}
+
+@media (min-width: 640px) {
+  .nav-button {
+    height: 7rem;
+    width: 7rem;
+  }
+}
+
+/* Navigation button hover effects */
+.nav-button:hover {
+  border-color: #3b82f6;
+  transform: translateY(-0.5rem) scale(1.05);
+  background: linear-gradient(to bottom right, #dbeafe, #e0e7ff);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  color: #1d4ed8;
+}
+
+/* Navigation button focus */
+.nav-button:focus {
+  outline: none;
+}
+
+/* Button icon */
+.button-icon {
+  font-size: 1.875rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Button label */
+.button-label {
+  font-size: 0.75rem;
+  line-height: 1.25;
+}
+
+@media (min-width: 640px) {
+  .button-label {
+    font-size: 1rem;
+  }
+}
+
+/* Glow click animation */
+@keyframes glow-click {
+  0% {
+    box-shadow: 0 0 0px rgba(59, 130, 246, 0);
+  }
+  50% {
+    box-shadow: 0 0 15px 5px rgba(59, 130, 246, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0px rgba(59, 130, 246, 0);
+  }
+}
+
+.animate-glow-click {
+  animation: glow-click 0.3s ease forwards;
+}
+
+/* Group hover animation for icon */
+.nav-button:hover .button-icon {
+  animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    transform: translate3d(0, -30px, 0);
+  }
+  70% {
+    transform: translate3d(0, -15px, 0);
+  }
+  90% {
+    transform: translate3d(0, -4px, 0);
+  }
+}
