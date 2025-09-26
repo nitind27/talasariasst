@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import "./QuestionList.css";
-
 const normalize = (str) => str.normalize("NFC").replace(/\s+/g, "").toLowerCase();
 
 const QuestionList = ({ questions, answers = {}, title = "प्रश्नावली" }) => {
