@@ -1,8 +1,11 @@
-import { NextResponse } from "next/server";
-import { verifyJwtEdge } from "./lib/edge-auth";
-
 export async function middleware(req) {
   const { pathname } = req.nextUrl;
+
+  // Bypass middleware for static files including images in public/uploads/images
+  if (pathname.startsWith("/uploads/images/")) {
+    return NextResponse.next();
+  }
+
   if (pathname.startsWith("/admin")) {
     const token = req.cookies.get("session")?.value || "";
     const payload = await verifyJwtEdge(token);
@@ -12,6 +15,7 @@ export async function middleware(req) {
       return NextResponse.redirect(url);
     }
   }
+
   return NextResponse.next();
 }
 
