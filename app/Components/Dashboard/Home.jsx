@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation"; // For Next.js 13+ App Router
 import "./home.css";
+import NoticeModal from "../../notice-board/NoticeModal";
 
 // Example image URLs
 const images = [
@@ -27,6 +28,29 @@ const FullPageImageSliderWithCard = () => {
 
   // State to track clicked button glow animation
   const [clickedIndex, setClickedIndex] = React.useState(null);
+
+  // Notices state for modal
+  const [notices, setNotices] = useState([]);
+  const [modalReady, setModalReady] = useState(false);
+
+  useEffect(() => {
+    // fetch notices on mount and open modal immediately
+    fetch("/api/notices", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((rows) => {
+        const mapped = (rows || []).map((r) => ({
+          id: r.id,
+          title: r.title,
+          description: r.description,
+          images: r.images || [],
+          pdfUrl: r.pdf_url,
+          expiry: r.expiry,
+        }));
+        setNotices(mapped);
+        setModalReady(true);
+      })
+      .catch(() => setModalReady(true));
+  }, []);
 
   useEffect(() => {
     resetTimeout();
@@ -124,6 +148,13 @@ const FullPageImageSliderWithCard = () => {
           </div>
         </div>
       </div>
+
+      {/* Notice Modal: open on mount with API-fed data */}
+      {modalReady && (
+        <div className="hidden">{/* keeps DOM neat; modal renders portal */}
+          <NoticeModal initialNotices={notices} openOnMount={true} autoOpen={false} showLauncherButton={false} />
+        </div>
+      )}
     </div>
   );
 };
