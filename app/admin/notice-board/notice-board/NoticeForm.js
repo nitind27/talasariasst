@@ -11,7 +11,7 @@ export default function NoticeForm() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerList, setViewerList] = useState([]);
   const [viewerIndex, setViewerIndex] = useState(0);
-
+console.log("items",items);
   // fetch list
   async function load() {
     const r = await fetch("/api/notices", { cache: "no-store" });
@@ -216,7 +216,8 @@ export default function NoticeForm() {
                       <div className="flex gap-1">
                         {(n.images || []).map((u, i) => (
                           <button key={i} onClick={() => openViewer(n.images, i)} className="focus:outline-none">
-                            <img src={u} alt="" className="h-8 w-8 rounded object-cover border" />
+                            <img src={`${process.env.NEXT_PUBLIC_API_URL}/api/uploads/${u}`} alt="" className="h-8 w-8 rounded object-cover border" />
+                            {`${process.env.NEXT_PUBLIC_API_URL}/api/uploads/${u}`}
                           </button>
                         ))}
                       </div>
