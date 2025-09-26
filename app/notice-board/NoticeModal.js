@@ -3,34 +3,63 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import Link from "next/link";
-import { FiX, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 export default function NoticeModal({
-  initialNotices = [
-    {
-      id: 1,
-      title: "Public Notice",
-      description: "Important update for all users.",
-      images: ["/pdfimage/1.jpg", "/pdfimage/2.jpg", "/pdfimage/3.jpg"],
-      pdfUrl: "/Pdf/IGNDPS MAHITI.pdf",
-      expiry: "2099-12-31",
-    },
-  ],
+  initialNotices = [],
   idleMs = 15000,
   autoOpen = true,
   showLauncherButton = true,
   openOnMount = false,
+  imageSlideMs = 4000,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeNoticeIndex, setActiveNoticeIndex] = useState(0);
   const [slideIndex, setSlideIndex] = useState(0);
+  const [fetched, setFetched] = useState([]);
   const idleTimer = useRef(null);
+  const imgTimer = useRef(null);
+  const videoRef = useRef(null);
 
-  const notices = useMemo(
-    () => initialNotices.filter((n) => !n.expiry || new Date(n.expiry) >= new Date()),
-    [initialNotices]
-  );
+  // Fetch notices from API and normalize media: video first, then images
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const r = await fetch("/api/notices", { cache: "no-store" });
+        const list = await r.json();
+        if (!mounted) return;
+        const now = new Date();
+        const normalized = (list || [])
+          .filter(n => (n.status ? true : false) && (!n.expiry || new Date(n.expiry) >= now))
+          .map(n => {
+            const images = Array.isArray(n.images) ? n.images : [];
+            const media = [];
+            if (n.video_url) media.push({ type: "video", url: n.video_url });
+            for (const u of images) media.push({ type: "image", url: u });
+            return { ...n, media };
+          })
+          .filter(n => n.media.length > 0);
+        setFetched(normalized);
+      } catch {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
+  const notices = useMemo(() => {
+    if (fetched.length) return fetched;
+    // Fallback to initialNotices (images only)
+    return (initialNotices || []).map(n => {
+      const media = Array.isArray(n.media) && n.media.length
+        ? n.media
+        : (Array.isArray(n.images) ? n.images.map(u => ({ type: "image", url: u })) : []);
+      return { ...n, media };
+    });
+  }, [fetched, initialNotices]);
+
+  // Idle auto-open
   useEffect(() => {
     if (!autoOpen) return;
 
@@ -51,18 +80,44 @@ export default function NoticeModal({
     };
   }, [idleMs, autoOpen, isOpen]);
 
-  // Open immediately on mount when requested
+  // Open on mount option
   useEffect(() => {
     if (openOnMount) setIsOpen(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const current = notices[activeNoticeIndex] || null;
-  const images = current?.images || [];
+  const media = current?.media || [];
+  const at = media[slideIndex] || null;
 
-  const nextSlide = () => setSlideIndex((i) => (i + 1) % Math.max(images.length, 1));
-  const prevSlide = () => setSlideIndex((i) => (i - 1 + Math.max(images.length, 1)) % Math.max(images.length, 1));
+  const nextSlide = () => setSlideIndex((i) => (i + 1) % Math.max(media.length || 1, 1));
+  const prevSlide = () => setSlideIndex((i) => (i - 1 + Math.max(media.length || 1, 1)) % Math.max(media.length || 1, 1));
   useEffect(() => setSlideIndex(0), [activeNoticeIndex, isOpen]);
+
+  // Images auto-advance
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!at || at.type !== "image") return;
+    if (imgTimer.current) clearTimeout(imgTimer.current);
+    imgTimer.current = setTimeout(() => {
+      nextSlide();
+    }, imageSlideMs);
+    return () => {
+      if (imgTimer.current) clearTimeout(imgTimer.current);
+    };
+  }, [isOpen, at, imageSlideMs]);
+
+  // Video autoplay when active
+  useEffect(() => {
+    if (!isOpen) return;
+    if (at?.type !== "video") return;
+    const v = videoRef.current;
+    if (v) {
+      v.currentTime = 0;
+      const p = v.play();
+      if (p && typeof p.then === "function") p.catch(() => {});
+    }
+  }, [isOpen, at]);
 
   return (
     <>
@@ -101,27 +156,37 @@ export default function NoticeModal({
                 leaveTo="opacity-0 scale-95"
               >
                 <Dialog.Panel className="w-full rounded-xl bg-white shadow-xl ring-1 ring-black/5 overflow-hidden">
-                   
-                  {/* Single column layout: Image centered, then title, then description */}
                   <div className="p-0 sm:p-0">
                     {current ? (
                       <>
-                        {/* Image slider on top */}
                         <div className="relative bg-gray-50 rounded-md">
-                          <div className=" w-full overflow-hidden flex items-center justify-center">
-                            {images.length > 0 ? (
-                              <img
-                                key={images[slideIndex]}
-                                src={images[slideIndex]}
-                                alt={`Slide ${slideIndex + 1}`}
-                                className="h-[80vh] w-auto object-cover mx-auto"
-                              />
+                          <div className="w-full overflow-hidden flex items-center justify-center">
+                            {at ? (
+                              at.type === "video" ? (
+                                <video
+                                  key={at.url}
+                                  ref={videoRef}
+                                  src={at.url}
+                                  className="h-[80vh] w-auto object-contain mx-auto bg-black"
+                                  onEnded={nextSlide}
+                                  muted
+                                  autoPlay
+                                  controls
+                                />
+                              ) : (
+                                <img
+                                  key={at.url}
+                                  src={at.url}
+                                  alt={`Slide ${slideIndex + 1}`}
+                                  className="h-[80vh] w-auto object-contain mx-auto"
+                                />
+                              )
                             ) : (
-                              <div className="text-sm text-gray-500 py-10">No images</div>
+                              <div className="text-sm text-gray-500 py-10">No media</div>
                             )}
                           </div>
 
-                          {images.length > 1 && (
+                          {media.length > 1 && (
                             <>
                               <button
                                 onClick={prevSlide}
@@ -139,9 +204,9 @@ export default function NoticeModal({
                               </button>
 
                               <div className="absolute bottom-3 inset-x-0 flex items-center justify-center gap-2">
-                                {images.map((_, i) => (
+                                {media.map((m, i) => (
                                   <button
-                                    key={i}
+                                    key={m.url + i}
                                     onClick={() => setSlideIndex(i)}
                                     className={`h-2.5 w-2.5 rounded-full ${i === slideIndex ? "bg-gray-900" : "bg-gray-300"}`}
                                     aria-label={`Go to slide ${i + 1}`}
@@ -150,27 +215,25 @@ export default function NoticeModal({
                               </div>
                             </>
                           )}
+
+                          {at && (
+                            <div className="absolute top-3 left-3 text-xs px-2 py-1 rounded bg-black/70 text-white">
+                              {at.type === "video" ? "Video" : "Photo"} {slideIndex + 1}/{media.length || 1}
+                            </div>
+                          )}
                         </div>
 
-                        {/* Title */}
                         <Dialog.Title className="mt-4 text-lg font-semibold text-center">
                           {current.title}
                         </Dialog.Title>
 
-                        {/* Description */}
                         <div className="mt-2 text-sm text-gray-700 whitespace-pre-line max-h-80 overflow-auto pr-1">
                           {current.description}
                         </div>
 
-                        {/* Optional PDF link */}
-                        {current.pdfUrl && (
+                        {(current.pdf_url || current.pdfUrl) && (
                           <div className="mt-4 text-center">
-                            <a
-                              href={current.pdfUrl}
-                              // target="_blank"
-                              rel="noreferrer"
-                              className="underline text-gray-900"
-                            >
+                            <a href={current.pdf_url || current.pdfUrl} rel="noreferrer" className="underline text-gray-900">
                               View PDF
                             </a>
                           </div>

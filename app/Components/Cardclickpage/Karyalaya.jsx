@@ -6,10 +6,12 @@ const Karyalaya = () => {
   const [isReading, setIsReading] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
-  const [voice, setVoice] = useState(null);
-  const [availableVoices, setAvailableVoices] = useState([]);
-  const [voiceLoading, setVoiceLoading] = useState(true);
+  const [voices, setVoices] = useState([]);
+  const [voicesReady, setVoicesReady] = useState(false);
+
   const speechRef = useRef(null);
+  const queueRef = useRef([]);
+  const indexRef = useRef(0);
 
   // Marathi digit to word map
   const digitMap = {
@@ -25,119 +27,54 @@ const Karyalaya = () => {
     '9': 'नऊ'
   };
 
-  // Replace digits with Marathi words
   const convertDigitsToMarathiWords = (text) => {
     return text.replace(/\d/g, (digit) => digitMap[digit] || digit);
   };
 
   useEffect(() => {
-    if (!window.speechSynthesis) {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
       setIsSupported(false);
-      setVoiceLoading(false);
       return;
     }
 
-    const loadVoices = () => {
-      const voices = window.speechSynthesis.getVoices();
-      setAvailableVoices(voices);
-      setVoiceLoading(false);
-
-      if (voices.length > 0) {
-        // Log available voices for debugging
-        console.log('Available voices:', voices.map(v => ({
-          name: v.name,
-          lang: v.lang,
-          voiceURI: v.voiceURI,
-          gender: v.gender
-        })));
-
-        // Enhanced voice selection strategy for Marathi
-        let selectedVoice = null;
-
-        // Strategy 1: Find Marathi female voice with specific names
-        const marathiFemaleNames = [
-          "Google मराठी",
-          "Microsoft Heera Desktop - Hindi (India)",
-          "Microsoft Kalpana Desktop - Hindi (India)",
-          "Google हिन्दी",
-          "Google Hindi (India)",
-          "Google हिंदी (भारत)"
-        ];
-
-        selectedVoice = voices.find(v =>
-          (v.lang === 'mr-IN' || v.lang.startsWith('mr')) &&
-          marathiFemaleNames.some(name => v.name.includes(name))
-        );
-
-        // Strategy 2: Find any Marathi voice
-        if (!selectedVoice) {
-          selectedVoice = voices.find(v =>
-            v.lang === 'mr-IN' || v.lang.startsWith('mr')
-          );
-        }
-
-        // Strategy 3: Find Hindi female voice (good for Marathi)
-        if (!selectedVoice) {
-          selectedVoice = voices.find(v =>
-            (v.lang === 'hi-IN' || v.lang.startsWith('hi')) &&
-            (v.gender === 'female' || /female|woman|स्त्री|महिला|mahila/i.test(v.name))
-          );
-        }
-
-        // Strategy 4: Find any Hindi voice
-        if (!selectedVoice) {
-          selectedVoice = voices.find(v =>
-            v.lang === 'hi-IN' || v.lang.startsWith('hi')
-          );
-        }
-
-        // Strategy 5: Find any female voice
-        if (!selectedVoice) {
-          selectedVoice = voices.find(v =>
-            (v.gender && v.gender.toLowerCase() === 'female') ||
-            /female|woman|स्त्री|महिला|mahila/i.test(v.name)
-          );
-        }
-
-        // Strategy 6: Fallback to any available voice
-        if (!selectedVoice && voices.length > 0) {
-          selectedVoice = voices[0];
-        }
-
-        if (selectedVoice) {
-          setVoice(selectedVoice);
-          console.log('Selected voice:', selectedVoice.name, selectedVoice.lang);
-        } else {
-          setVoice(null);
-          console.log('No suitable voice found');
-        }
-      }
+    const handleVoicesChanged = () => {
+      const list = window.speechSynthesis?.getVoices?.() ?? [];
+      setVoices(list);
+      if (list.length) setVoicesReady(true);
     };
 
-    // Handle voice loading with timeout
-    const timeoutId = setTimeout(() => {
-      if (voiceLoading) {
-        setVoiceLoading(false);
-        loadVoices();
-      }
-    }, 3000);
-
-    // Voices may load asynchronously
-    window.speechSynthesis.onvoiceschanged = () => {
-      clearTimeout(timeoutId);
-      loadVoices();
-    };
-
-    // Initial load
-    loadVoices();
+    window.speechSynthesis.onvoiceschanged = handleVoicesChanged;
+    handleVoicesChanged();
 
     return () => {
-      clearTimeout(timeoutId);
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-      }
+      window.speechSynthesis.onvoiceschanged = null;
+      window.speechSynthesis.cancel();
     };
   }, []);
+
+  const ensureVoicesReady = async (timeoutMs = 2000) => {
+    if (!('speechSynthesis' in window)) return false;
+    if (voicesReady && voices.length) return true;
+
+    const start = Date.now();
+    return new Promise((resolve) => {
+      const tick = () => {
+        const list = window.speechSynthesis.getVoices() ?? [];
+        if (list.length) {
+          setVoices(list);
+          setVoicesReady(true);
+          resolve(true);
+          return;
+        }
+        if (Date.now() - start >= timeoutMs) {
+          resolve(false);
+          return;
+        }
+        setTimeout(tick, 100);
+      };
+      tick();
+    });
+  };
 
   const marathiContent = `
 तलासरी तालुका पालघर जिल्हयातील 8 तालुक्यांपैकी बहुतांशी (90.73) टक्के आदिवासी बहुल तालुका आहे. तालुका केंद्र शासीत प्रदेश दादरा नगर हवेली व गुजरात राज्य यांच्या सिमा भागेवर वसलेला आहे. तालुक्याच्या मध्य भागातुन मुंबई – अहमदाबाद राष्ट्रीय महामार्ग क्रमांक-8 जात आहे. तालुक्याचे 2011 च्या जनगणनेनुसार एकुण 154818 लोकसंख्या आहे. त्यापैकी 76417 पुरुष व 78401 स्त्रियांचे प्रमाण आहे. तालुक्यात झरी,तलासरी अशी दोन महसुल मंडळे असुन, एकुण 13 तलाठी सजा आहेत.
@@ -162,108 +99,150 @@ const Karyalaya = () => {
 तलासरी मुख्यालयापासुन मुंबईचे अंतर सूमारे 180 किमी आहे.
 `.trim();
 
-  const startReading = () => {
-    if (!window.speechSynthesis) {
+  const selectBestVoice = (allVoices) => {
+    const preferredVoiceNames = [
+      'Google मराठी',
+      'Google हिन्दी',
+      'Google Hindi (India)',
+      'Google हिंदी (भारत)',
+      'Google female',
+      'Microsoft Heera Desktop - Hindi (India)',
+      'Microsoft Kalpana Desktop - Hindi (India)',
+    ];
+
+    let v =
+      allVoices.find(
+        (x) =>
+          (x.lang && (x.lang === 'mr-IN' || x.lang.startsWith('mr'))) &&
+          preferredVoiceNames.some((name) => x.name === name)
+      ) ||
+      allVoices.find(
+        (x) =>
+          (x.lang && (x.lang === 'mr-IN' || x.lang.startsWith('mr'))) &&
+          ((x.gender && x.gender.toLowerCase() === 'female') ||
+            /female|woman|स्त्री|महिला|महिलां/i.test(x.name))
+      ) ||
+      allVoices.find((x) => x.lang === 'mr-IN' || (x.lang && x.lang.startsWith('mr'))) ||
+      allVoices.find(
+        (x) =>
+          (x.lang && (x.lang === 'hi-IN' || x.lang.startsWith('hi'))) &&
+          (preferredVoiceNames.some((name) => x.name === name) ||
+            (x.gender && x.gender.toLowerCase() === 'female') ||
+            /female|woman|स्त्री|महिला|mahila/i.test(x.name))
+      ) ||
+      allVoices.find((x) => x.lang === 'hi-IN' || (x.lang && x.lang.startsWith('hi'))) ||
+      (allVoices.length ? allVoices[0] : null);
+
+    return v || null;
+  };
+
+  // Split the long text into smaller chunks for stable desktop TTS
+  const chunkText = (text, maxLen = 220) => {
+    const clean = convertDigitsToMarathiWords(text)
+      .replace(/\r/g, '')
+      .replace(/[–—]/g, '-')
+      .replace(/\s+\n/g, '\n')
+      .trim();
+
+    // First split by double newline (paragraphs)
+    const paragraphs = clean.split(/\n{2,}/);
+    const chunks = [];
+
+    paragraphs.forEach((p) => {
+      const sentences = p.split(/([.!?।]|[\n])/).reduce((acc, cur) => {
+        if (!acc.length) return cur ? [cur] : [];
+        const last = acc[acc.length - 1];
+        if (/([.!?।]|\n)$/.test(last)) {
+          if (cur && cur !== '\n') acc.push(cur);
+        } else {
+          acc[acc.length - 1] = last + cur;
+        }
+        return acc;
+      }, []);
+
+      let buffer = '';
+      sentences.forEach((s) => {
+        const candidate = (buffer + ' ' + s).trim();
+        if (candidate.length > maxLen && buffer) {
+          chunks.push(buffer);
+          buffer = s.trim();
+        } else {
+          buffer = candidate;
+        }
+      });
+      if (buffer) chunks.push(buffer);
+    });
+
+    return chunks.filter(Boolean);
+  };
+
+  const buildUtterance = (text, selectedVoice) => {
+    const u = new window.SpeechSynthesisUtterance(text);
+    if (selectedVoice) {
+      u.voice = selectedVoice;
+      u.lang = selectedVoice.lang;
+    } else {
+      u.lang = 'mr-IN';
+    }
+    // Match the working component params
+    u.rate = 1;
+    u.pitch = 1.01;
+    u.volume = 1;
+    return u;
+  };
+
+  const speakQueueFrom = (startIdx) => {
+    indexRef.current = startIdx;
+
+    const speakNext = () => {
+      if (!queueRef.current.length || indexRef.current >= queueRef.current.length) {
+        setIsReading(false);
+        setIsPaused(false);
+        speechRef.current = null;
+        return;
+      }
+
+      const current = queueRef.current[indexRef.current];
+      speechRef.current = current;
+
+      current.onstart = () => {
+        setIsReading(true);
+        setIsPaused(false);
+      };
+      current.onend = () => {
+        indexRef.current += 1;
+        speakNext();
+      };
+      current.onerror = () => {
+        indexRef.current += 1;
+        speakNext();
+      };
+
+      window.speechSynthesis.speak(current);
+    };
+
+    speakNext();
+  };
+
+  const startReading = async () => {
+    if (!('speechSynthesis' in window)) {
       alert('आपल्या ब्राउझरमध्ये वाचण्याची सुविधा उपलब्ध नाही. कृपया Chrome, Firefox, किंवा Safari वापरा.');
       return;
     }
 
-    if (voiceLoading) {
-      alert('आवाज लोड होत आहे. कृपया थोडा वेळ थांबा.');
-      return;
-    }
-
-    if (!voice && availableVoices.length === 0) {
-      alert('कोणताही आवाज उपलब्ध नाही. कृपया ब्राउझर रीफ्रेश करा किंवा इतर ब्राउझर वापरा.');
-      return;
-    }
-
     try {
-      // Cancel any ongoing speech
       window.speechSynthesis.cancel();
 
-      // Convert digits to Marathi words before speaking
-      const textToSpeak = convertDigitsToMarathiWords(marathiContent);
+      // Wait briefly for desktop voices
+      await ensureVoicesReady(2500);
 
-      const utterance = new window.SpeechSynthesisUtterance(textToSpeak);
+      const selectedVoice = selectBestVoice(voices);
+      const parts = chunkText(marathiContent);
 
-      // Enhanced voice and language settings
-      if (voice) {
-        utterance.voice = voice;
-        utterance.lang = voice.lang;
-        console.log('Using voice:', voice.name, 'with lang:', voice.lang);
-      } else {
-        // Fallback language settings
-        utterance.lang = 'mr-IN';
-        console.log('Using fallback language: mr-IN');
-      }
+      queueRef.current = parts.map((t) => buildUtterance(t, selectedVoice));
+      if (!queueRef.current.length) return;
 
-      // Optimized speech parameters for Marathi
-      utterance.rate = 0.75; // Slower for better pronunciation
-      utterance.pitch = 1.1; // Slightly higher pitch for female-like sound
-      utterance.volume = 1;
-
-      utterance.onstart = () => {
-        setIsReading(true);
-        setIsPaused(false);
-        console.log('Speech started');
-      };
-
-      utterance.onend = () => {
-        setIsReading(false);
-        setIsPaused(false);
-        speechRef.current = null;
-        console.log('Speech ended');
-      };
-
-      utterance.onpause = () => {
-        setIsPaused(true);
-        console.log('Speech paused');
-      };
-
-      utterance.onresume = () => {
-        setIsPaused(false);
-        console.log('Speech resumed');
-      };
-
-      utterance.onerror = (event) => {
-        console.error('Speech synthesis error:', event);
-        setIsReading(false);
-        setIsPaused(false);
-        speechRef.current = null;
-
-        // Detailed error handling
-        let errorMessage = 'वाचण्यात त्रुटी आली. कृपया पुन्हा प्रयत्न करा.';
-
-        switch (event.error) {
-          case 'not-allowed':
-            errorMessage = 'वाचण्यासाठी परवानगी आवश्यक आहे. कृपया ब्राउझर सेटिंग्ज तपासा.';
-            break;
-          case 'network':
-            errorMessage = 'नेटवर्क समस्या. कृपया इंटरनेट कनेक्शन तपासा.';
-            break;
-          case 'not-supported':
-            errorMessage = 'हा आवाज समर्थित नाही. कृपया इतर ब्राउझर वापरा.';
-            break;
-          case 'interrupted':
-            errorMessage = 'वाचणे थांबवले गेले.';
-            break;
-          case 'audio-busy':
-            errorMessage = 'आवाज व्यापलेला आहे. कृपया थोडा वेळ थांबा.';
-            break;
-          case 'audio-hardware':
-            errorMessage = 'साउंड सिस्टम समस्या. कृपया साउंड सेटिंग्ज तपासा.';
-            break;
-          default:
-            errorMessage = `वाचण्यात त्रुटी आली (${event.error}). कृपया पुन्हा प्रयत्न करा.`;
-        }
-
-        alert(errorMessage);
-      };
-
-      speechRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
-
+      speakQueueFrom(0);
     } catch (error) {
       console.error('Speech synthesis error:', error);
       alert('वाचण्यात त्रुटी आली. कृपया पुन्हा प्रयत्न करा.');
@@ -298,6 +277,8 @@ const Karyalaya = () => {
         window.speechSynthesis.cancel();
         setIsReading(false);
         setIsPaused(false);
+        queueRef.current = [];
+        indexRef.current = 0;
         speechRef.current = null;
       }
     } catch (error) {
@@ -347,9 +328,8 @@ const Karyalaya = () => {
           {!isReading ? (
             <button
               onClick={startReading}
-              disabled={voiceLoading}
-              className={`audio-button ${voiceLoading ? 'play-button-disabled' : 'play-button'}`}
-              title={voiceLoading ? "आवाज लोड होत आहे..." : "वाचा सुरू करा"}
+              className="audio-button play-button"
+              title="वाचा सुरू करा"
             >
               <svg className="button-icon" fill="currentColor" viewBox="0 0 20 20">
                 <path
@@ -358,7 +338,7 @@ const Karyalaya = () => {
                   clipRule="evenodd"
                 />
               </svg>
-              {voiceLoading ? "लोड..." : "वाचा"}
+              वाचा
             </button>
           ) : (
             <>
@@ -411,13 +391,6 @@ const Karyalaya = () => {
           )}
         </div>
 
-        {/* Loading Indicator */}
-        {voiceLoading && (
-          <div className="loading-indicator">
-            <p>आवाज लोड होत आहे...</p>
-          </div>
-        )}
-
         {/* Title */}
         <h1 className="page-title">
           तलासरी तालुका माहिती
@@ -426,10 +399,9 @@ const Karyalaya = () => {
         {/* Marathi Content */}
         <div className="content-text">
           {marathiContent.split('\n').map((line, idx) => {
-            // Bold the section headers
             if (
               line.trim() === "मतदार संघ" ||
-              line.trim() === "भौगोलिक माहीती-" ||
+              line.trim() === "भौगोलीक माहीती-" ||
               line.trim() === "सांस्कृतिक वारसा"
             ) {
               return (
@@ -438,7 +410,6 @@ const Karyalaya = () => {
                 </div>
               );
             }
-            // Normal paragraph
             return <div key={idx} className="whitespace-pre-line">{line}</div>;
           })}
         </div>

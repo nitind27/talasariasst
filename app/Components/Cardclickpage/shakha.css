@@ -606,3 +606,86 @@
     max-width: calc(100% - 2rem);
   }
 }
+
+/* Text card in TextViewer */
+.text-content {
+  max-width: 48rem;        /* ~768px */
+  width: 100%;
+  background: rgba(255, 255, 255, 0.98);
+  border-radius: 0.75rem;   /* 12px */
+  padding: 1.25rem 1.5rem;  /* 20px 24px */
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  color: #111827;
+  line-height: 1.75;
+  font-size: 1rem;
+  text-align: left;
+  max-height: 75vh;         /* keep big texts scrollable within the card */
+  overflow: auto;
+}
+
+/* Document-style formatting inside the text card */
+.text-content {
+  max-width: 48rem;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+  color: #111827;
+  line-height: 1.85;
+  font-size: 1rem;
+  max-height: 75vh;
+  overflow: auto;
+}
+
+.doc { width: 100%; }
+
+.doc-title {
+  text-align: center;
+  font-weight: 800;
+  font-size: 1.125rem;
+  margin: 0 0 0.25rem 0;
+}
+
+.doc-subtitle {
+  text-align: center;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.5rem 0;
+}
+
+.doc-separator {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 0.75rem 0 1rem 0;
+}
+
+.doc-p {
+  margin: 0 0 0.75rem 0;
+}
+
+/* Numbered list styling for items like "1.", "२." etc. */
+.doc-ol {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.doc-li {
+  margin-bottom: 0.5rem;
+}
+
+/* Slightly larger on mobile for readability */
+@media (max-width: 480px) {
+  .text-content { font-size: 1.0625rem; }
+  .doc-title { font-size: 1.2rem; }
+}
+
+/* Tailwind-like helper used in JSX */
+.whitespace-pre-line {
+  white-space: pre-line;
+}
+
+/* Optional: nicer paragraphs if content has blank lines */
+.text-content p {
+  margin: 0 0 0.75rem 0;
+}

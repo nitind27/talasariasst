@@ -1,7 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import Zoom from "react-medium-image-zoom";
-import "react-medium-image-zoom/dist/styles.css";
+// Removed image zoom since we no longer show images
 import { useRouter } from "next/navigation";
 import "./shakha.css";
 
@@ -11,7 +10,7 @@ const sangayoSchemes = [
     name: "संजय गांधी निराधार अनदान योजना",
     imgPath: "/pdfimage/1.jpg",
     contant: `महाराष्ट्र क शासन तहसिल कार्यालय तलासरी 
-( संगांयो शाखा  
+( संगांयो शाखा )
 १.संजय गांधी निराधार अनुदान योजना पात्र लाभार्थी खालील अटीच्या अधिन राहुन पात्र होतील  ( निराधार विधवा, दिव्यांग- अस्थिव्यंग, अंध , मुकबधिर , मतिमंद, कर्णवधिर इत्यादी प्रवर्ग,क्षयरोग, पक्षघात , कर्करोग, एड्रस, कुष्ठरोग, सिकलसेल, घटस्फोट , अविवाहीत स्त्री ३५ वर्षापेक्षा जास्त, १८ वर्षाखालील अनाथ मुले व मुली ) 
 संजय गांधी योजना नमुना अर्जांसोबत खालील कागदपत्रे जोडणे आवश्यक आहेत  १. स्वंय घोषणापत्र १५ वर्ष वास्तव्याचा दाखला/रहिवासी दाखला असणे आवश्यक आहे  २. वय- १८ ते ६५ वर्षापेक्षा कमी असावे . ( आधार कार्ड नुसार वयात बसणे आवश्यक आहे.) ३.माझी लाडकी बहिण योजनेचे स्वंयघोषणा पत्र असणे आवश्यक आहे 
 ४. पतीचा चा मृत्यु झाल्यास प्रमाणपत्र झेरॉक्स (ग्रामपंचायत/नगरपंचायतच्या मृत्यू नोंदवहीतील 
@@ -48,9 +47,7 @@ const sangayoSchemes = [
   {
     name: "इंदिरा गांधी राष्ट्रीय वृध्दापकाळ निवृत्तीवेतन योजना",
     imgPath: "/pdfimage/3.jpg",
-    contant: `महाराष्ट् 
-un 
-शासन 
+    contant: `महाराष्ट् un शासन 
 तहसिल कार्यालय तलासरी 
 ( संगांयो शाखा) 
 ३. इंदिरा गांधी राष्ट्रीय वृध्दापकाळ निवृत्तीवेतन योजना 
@@ -278,57 +275,212 @@ const PDFViewer = ({ onBack, src, title }) => {
   );
 };
 
-const ImageViewerFull = ({ onBack, src, title, content }) => {
-  const [isSpeaking, setIsSpeaking] = useState(false);
+// TEXT Viewer Component (replaces image viewer)
+const TextViewer = ({ onBack, title, content }) => {
+  const [isReading, setIsReading] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [voices, setVoices] = useState([]);
-  const utteranceRef = useRef(null);
+  const [voicesReady, setVoicesReady] = useState(false);
+
+  const currentUtterRef = useRef(null);
+  const queueRef = useRef([]);
+  const indexRef = useRef(0);
+
+  const digitMap = { '0': 'शून्य','1': 'एक','2': 'दोन','3': 'तीन','4': 'चार','5': 'पाच','6': 'सहा','7': 'सात','8': 'आठ','9': 'नऊ' };
+  const convertDigitsToMarathiWords = (text) => (text || "").replace(/\d/g, (d) => digitMap[d] || d);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
-      loadVoices();
+      const loadVoices = () => {
+        const list = window.speechSynthesis.getVoices() ?? [];
+        setVoices(list);
+        if (list.length) setVoicesReady(true);
+      };
       window.speechSynthesis.onvoiceschanged = loadVoices;
+      loadVoices();
       return () => { window.speechSynthesis.onvoiceschanged = null; };
     } else {
       setVoices([]);
+      setVoicesReady(false);
     }
   }, []);
 
-  const speakText = () => {
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
+  const ensureVoicesReady = async (timeoutMs = 2500) => {
+    if (!("speechSynthesis" in window)) return false;
+    if (voicesReady && voices.length) return true;
+    const start = Date.now();
+    return new Promise((resolve) => {
+      const tick = () => {
+        const list = window.speechSynthesis.getVoices() ?? [];
+        if (list.length) {
+          setVoices(list);
+          setVoicesReady(true);
+          resolve(true);
+          return;
+        }
+        if (Date.now() - start >= timeoutMs) {
+          resolve(false);
+          return;
+        }
+        setTimeout(tick, 100);
+      };
+      tick();
+    });
+  };
+
+  const selectBestVoice = (allVoices) => {
+    const preferredVoiceNames = [
+      "Google मराठी","Google हिन्दी","Google Hindi (India)","Google हिंदी (भारत)","Google female",
+      "Microsoft Heera Desktop - Hindi (India)","Microsoft Kalpana Desktop - Hindi (India)",
+    ];
+    return (
+      allVoices.find(v => (v.lang && (v.lang === "mr-IN" || v.lang.startsWith("mr"))) && preferredVoiceNames.some(name => v.name === name)) ||
+      allVoices.find(v => (v.lang && (v.lang === "mr-IN" || v.lang.startsWith("mr"))) && ((v.gender && v.gender.toLowerCase() === "female") || /female|woman|स्त्री|महिला|महिलां/i.test(v.name))) ||
+      allVoices.find(v => v.lang === "mr-IN" || (v.lang && v.lang.startsWith("mr"))) ||
+      allVoices.find(v => (v.lang && (v.lang === "hi-IN" || v.lang.startsWith("hi"))) && (preferredVoiceNames.some(name => v.name === name) || (v.gender && v.gender.toLowerCase() === "female") || /female|woman|स्त्री|महिला|mahila/i.test(v.name))) ||
+      allVoices.find(v => v.lang === "hi-IN" || (v.lang && v.lang.startsWith("hi"))) ||
+      (allVoices.length ? allVoices[0] : null)
+    ) || null;
+  };
+
+  const chunkText = (text, maxLen = 220) => {
+    const clean = convertDigitsToMarathiWords((text || ""))
+      .replace(/\r/g, "").replace(/[–—]/g, "-").replace(/\s+\n/g, "\n").trim();
+    const paragraphs = clean.split(/\n{2,}/);
+    const chunks = [];
+    paragraphs.forEach((p) => {
+      const parts = p.split(/([.!?।]|\n)/);
+      const sentences = [];
+      for (let i = 0; i < parts.length; i += 2) {
+        const seg = (parts[i] || "").trim();
+        const punct = parts[i + 1] || "";
+        if (seg) sentences.push((seg + punct).trim());
+      }
+      let buffer = "";
+      sentences.forEach((s) => {
+        const candidate = (buffer + " " + s).trim();
+        if (candidate.length > maxLen && buffer) {
+          chunks.push(buffer);
+          buffer = s.trim();
+        } else {
+          buffer = candidate;
+        }
+      });
+      if (buffer) chunks.push(buffer);
+    });
+    return chunks.filter(Boolean);
+  };
+
+  const buildUtterance = (text, selectedVoice) => {
+    const u = new window.SpeechSynthesisUtterance(text);
+    if (selectedVoice) {
+      u.voice = selectedVoice;
+      u.lang = selectedVoice.lang;
+    } else {
+      u.lang = "mr-IN";
+    }
+    u.rate = 1;
+    u.pitch = 1.01;
+    u.volume = 1;
+    return u;
+  };
+
+  const speakQueueFrom = (startIdx) => {
+    indexRef.current = startIdx;
+    const speakNext = () => {
+      if (!queueRef.current.length || indexRef.current >= queueRef.current.length) {
+        setIsReading(false);
+        setIsPaused(false);
+        currentUtterRef.current = null;
+        return;
+      }
+      const current = queueRef.current[indexRef.current];
+      currentUtterRef.current = current;
+      current.onstart = () => { setIsReading(true); setIsPaused(false); };
+      current.onend = () => { indexRef.current += 1; speakNext(); };
+      current.onerror = () => { indexRef.current += 1; speakNext(); };
+      window.speechSynthesis.speak(current);
+    };
+    speakNext();
+  };
+
+  const startReading = async () => {
+    if (!("speechSynthesis" in window)) {
+      alert("आपल्या ब्राउझरमध्ये वाचण्याची सुविधा उपलब्ध नाही. कृपया Chrome, Firefox, किंवा Safari वापरा.");
       return;
     }
-    if ("speechSynthesis" in window && content) {
-      const utter = new window.SpeechSynthesisUtterance(content);
-      utter.lang = "mr-IN";
-      utter.rate = 0.88;
-      utter.pitch = 1.08;
-
-      const preferred = voices.find(v => v.lang === "mr-IN" && v.name.toLowerCase().includes("female"));
-      const marathi = voices.find(v => v.lang === "mr-IN");
-      const hindiFemale = voices.find(v => v.lang === "hi-IN" && v.name.toLowerCase().includes("female"));
-      const hindi = voices.find(v => v.lang === "hi-IN");
-      const enFemale = voices.find(v => v.lang.startsWith("en") && v.name.toLowerCase().includes("female"));
-
-      utter.voice = preferred || marathi || hindiFemale || hindi || enFemale || voices[0];
-
-      utter.onstart = () => setIsSpeaking(true);
-      utter.onend = () => setIsSpeaking(false);
-      utter.onerror = () => setIsSpeaking(false);
-
-      utteranceRef.current = utter;
-      window.speechSynthesis.speak(utter);
+    if (!content || content.trim().length < 2) return;
+    try {
+      window.speechSynthesis.cancel();
+      await ensureVoicesReady(2500);
+      const selectedVoice = selectBestVoice(voices);
+      const chunks = chunkText(content);
+      queueRef.current = chunks.map((t) => buildUtterance(t, selectedVoice));
+      if (!queueRef.current.length) return;
+      speakQueueFrom(0);
+    } catch (e) {
+      console.error("Speech synthesis error:", e);
+      alert("वाचण्यात त्रुटी आली. कृपया पुन्हा प्रयत्न करा.");
     }
   };
 
+  const stopReading = () => {
+    try {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        setIsReading(false);
+        setIsPaused(false);
+        queueRef.current = [];
+        indexRef.current = 0;
+        currentUtterRef.current = null;
+      }
+    } catch {}
+  };
+
+  // Format raw text into paragraphs and a numbered list (if lines start with 1., १., 2), २) etc.)
+  const renderFormattedContent = (raw) => {
+    if (!raw) return null;
+    const lines = (raw || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+
+    const numRe = /^((\d+|[०१२३४५६७८९]+)[\.\)])\s*/; // 1. / १. / 1) / १)
+    const items = [];
+    const paras = [];
+    lines.forEach(l => {
+      if (numRe.test(l)) {
+        items.push(l.replace(numRe, (m) => "" + m));
+      } else {
+        paras.push(l);
+      }
+    });
+
+    return (
+      <div className="doc">
+        {paras.length > 0 && paras.slice(0, 3).map((p, i) => (
+          <p key={"p-top-" + i} className={"doc-p " + (i === 0 ? "doc-title" : i === 1 ? "doc-subtitle" : "")}>
+            {p}
+          </p>
+        ))}
+        <div className="doc-separator"></div>
+        {items.length > 0 ? (
+          <ol className="doc-ol">
+            {items.map((it, i) => (
+              <li key={"li-" + i} className="doc-li">{it}</li>
+            ))}
+          </ol>
+        ) : (
+          paras.slice(3).map((p, i) => (
+            <p key={"p-rest-" + i} className="doc-p">{p}</p>
+          ))
+        )}
+      </div>
+    );
+  };
   return (
     <div className="image-viewer">
       <div className="image-header">
         <button
           className="image-back-button"
-          onClick={onBack}
+          onClick={() => { stopReading(); onBack(); }}
           aria-label="Back"
         >
           <BackIcon />
@@ -337,33 +489,33 @@ const ImageViewerFull = ({ onBack, src, title, content }) => {
         <span className="image-title">{title}</span>
         {(content && content.length > 12) && (
           <button
-            onClick={speakText}
-            className={`image-speak-button ${isSpeaking ? 'speaking' : 'not-speaking'}`}
-            aria-label={isSpeaking ? "थांबवा" : "वाचा"}
+            onClick={() => (isReading ? stopReading() : startReading())}
+            className={`image-speak-button ${isReading ? 'speaking' : 'not-speaking'}`}
+            aria-label={isReading ? "थांबवा" : "वाचा"}
+            title={isReading ? "थांबवा" : "वाचा सुरू करा"}
+            type="button"
           >
-            <svg className={`image-speak-icon ${isSpeaking ? "animate-pulse" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {isSpeaking ? (
+            <svg className={`image-speak-icon ${isReading ? "animate-pulse" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {isReading ? (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M18.364 5.636a9 9 0 11-12.728 0M12 17v4m-4 0h8" />
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" />
               ) : (
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M12 18v4m-4 0h8m4-8a8 8 0 10-16 0 8 8 0 0016 0z" />
               )}
             </svg>
             <span className="image-speak-text">
-              {isSpeaking ? "थांबवा" : "वाचा"}
+              {isReading ? "थांबवा" : "वाचा"}
             </span>
           </button>
         )}
       </div>
-      <div className="image-content">
-        <Zoom>
-          <img
-            alt={title + " Image"}
-            src={src}
-            className="image-zoom"
-          />
-        </Zoom>
+
+       {/* Text content instead of image */}
+       <div className="image-content">
+        <div className="text-content">
+          {renderFormattedContent(content)}
+        </div>
       </div>
     </div>
   );
@@ -372,7 +524,7 @@ const ImageViewerFull = ({ onBack, src, title, content }) => {
 const ShakhaGrid = () => {
   const router = useRouter();
   const [selected, setSelected] = useState(null);
-  const [showImage, setShowImage] = useState(null);
+  const [showText, setShowText] = useState(null);
   const [showPDF, setShowPDF] = useState(null);
   const rows = [];
   for (let i = 0; i < sections.length; i += 3) rows.push(sections.slice(i, i + 3));
@@ -382,9 +534,9 @@ const ShakhaGrid = () => {
   };
 
   const DetailCard = ({ section, onBack }) => {
-    const imageSections = ["संगायो शाखा"];
+    const textSections = ["संगायो शाखा"]; // show text instead of images
     const pdfSections = ["पुरवठा शाखा"];
-    const hasImages = imageSections.includes(section.title) && section.pdfMap;
+    const hasText = textSections.includes(section.title) && section.pdfMap;
     const hasPDFs = pdfSections.includes(section.title) && section.pdfMap;
 
     return (
@@ -405,15 +557,14 @@ const ShakhaGrid = () => {
                 {section.info.map((item, idx) => (
                   <li
                     key={item}
-                    className={`detail-list-item ${hasImages || hasPDFs ? 'pdf-hover' : ''}`}
+                    className={`detail-list-item ${hasText || hasPDFs ? 'pdf-hover' : ''}`}
                     onClick={
-                      hasImages
+                      hasText
                         ? () =>
-                          setShowImage({
-                            title: item,
-                            path: section.pdfMap[idx]?.imgPath,
-                            content: section.pdfMap[idx]?.contant,
-                          })
+                            setShowText({
+                              title: item,
+                              content: section.pdfMap[idx]?.contant,
+                            })
                         : hasPDFs
                           ? () =>
                             setShowPDF({
@@ -486,12 +637,11 @@ const ShakhaGrid = () => {
       {selected !== null && (
         <DetailCard section={sections[selected]} onBack={() => setSelected(null)} />
       )}
-      {showImage && (
-        <ImageViewerFull
-          src={showImage.path}
-          title={showImage.title}
-          content={showImage.content}
-          onBack={() => setShowImage(null)}
+      {showText && (
+        <TextViewer
+          title={showText.title}
+          content={showText.content}
+          onBack={() => setShowText(null)}
         />
       )}
       {showPDF && (

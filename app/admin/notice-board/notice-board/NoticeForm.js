@@ -58,10 +58,10 @@ console.log("items",items);
     f.title.value = n.title;
     f.description.value = n.description;
     f.expiry.value = n.expiry ? n.expiry.substring(0, 10) : "";
-    f.images.value = "";
+    f.image.value = "";
     f.pdf.value = "";
+    if (f.video) f.video.value = ""; // <-- NEW
   }
-
   async function deleteRow(id) {
     if (!confirm("Delete this notice?")) return;
     const r = await fetch(`/api/notices/${id}`, { method: "DELETE" });
@@ -137,17 +137,30 @@ console.log("items",items);
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Images</label>
+              <label className="block text-sm font-medium mb-1">Image</label>
               <input
-                name="images"
-                id="images"
+                name="image"
+                id="image"
                 type="file"
                 accept="image/*"
-                multiple
                 className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-gray-300 file:bg-white file:px-3 file:py-1.5 file:text-sm hover:file:bg-gray-50"
               />
               <p className="text-xs text-gray-500 mt-1">
-                On edit: leaving this empty keeps existing images; uploading adds more.
+                Edit: leave empty to keep existing image; upload to replace.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">Video</label>
+              <input
+                name="video"
+                id="video"
+                type="file"
+                accept="video/*"
+                className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-gray-300 file:bg-white file:px-3 file:py-1.5 file:text-sm hover:file:bg-gray-50"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Optional. If provided, it will play before images in the modal.
               </p>
             </div>
 
@@ -214,12 +227,12 @@ console.log("items",items);
                     </td>
                     <td className="py-2 pr-4">
                       <div className="flex gap-1">
-                        {(n.images || []).map((u, i) => (
-                          <button key={i} onClick={() => openViewer(n.images, i)} className="focus:outline-none">
-                            <img src={`${process.env.NEXT_PUBLIC_API_URL}/api/uploads/${u}`} alt="" className="h-8 w-8 rounded object-cover border" />
-                            {`${process.env.NEXT_PUBLIC_API_URL}/api/uploads/${u}`}
+                        {(n.images || []).slice(0,1).map((u, i) => (
+                          <button key={i} onClick={() => openViewer([u], 0)} className="focus:outline-none">
+                            <img src={u} alt="" className="h-8 w-8 rounded object-cover border" />
                           </button>
                         ))}
+                        {(!n.images || n.images.length === 0) && <span>-</span>}
                       </div>
                     </td>
                     <td className="py-2 pr-4">
