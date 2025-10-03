@@ -11,7 +11,7 @@ export default function NoticeForm() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerList, setViewerList] = useState([]);
   const [viewerIndex, setViewerIndex] = useState(0);
-console.log("items",items);
+// console.log("items",items);
   // fetch list
   async function load() {
     const r = await fetch("/api/notices", { cache: "no-store" });
