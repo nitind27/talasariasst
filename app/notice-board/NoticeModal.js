@@ -252,7 +252,7 @@ export default function NoticeModal({
                   </div>
 
                   <div className="px-4 sm:px-6 py-3 border-t flex items-center justify-between">
-                    <div className="flex gap-2">
+                    {/* <div className="flex gap-2">
                       {notices.map((notice, index) => (
                         <button
                           key={notice.id}
@@ -268,7 +268,7 @@ export default function NoticeModal({
                           {notice.title || `Notice ${index + 1}`}
                         </button>
                       ))}
-                    </div>
+                    </div> */}
                     <button
                       onClick={() => setIsOpen(false)}
                       className="rounded-md bg-gray-900 text-white px-4 py-2 text-sm hover:bg-gray-800"

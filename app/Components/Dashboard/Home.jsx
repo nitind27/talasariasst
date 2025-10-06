@@ -7,6 +7,15 @@ import NoticeModal from "../../notice-board/NoticeModal";
 // Example image URLs
 const images = [
   "/Slider/imgslider.jpeg",
+  "/card/1.jpeg",
+  "/card/2.jpeg",
+  "/card/3.jpeg",
+  "/card/4.jpeg",
+  "/card/5.jpeg",
+  "/card/6.jpeg",
+  "/card/7.jpeg",
+  "/card/8.jpeg",
+  "/card/9.jpeg",
   "/card/WhatsApp Image 2025-09-26 at 4.27.34 PM.jpeg",
   "/card/WhatsApp Image 2025-09-26 at 4.27.35 PM (1).jpeg",
   "/card/WhatsApp Image 2025-09-26 at 4.27.35 PM.jpeg",
