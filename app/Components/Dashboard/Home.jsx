@@ -4,50 +4,6 @@ import { useRouter } from "next/navigation"; // For Next.js 13+ App Router
 import "./home.css";
 import NoticeModal from "../../notice-board/NoticeModal";
 
-// Example image URLs
-const images = [
-  "/Slider/imgslider.jpeg",
-  "/card/1.jpeg",
-  "/card/2.jpeg",
-  "/card/3.jpeg",
-  "/card/4.jpeg",
-  "/card/5.jpeg",
-  "/card/6.jpeg", 
-  "/card/7.jpeg",
-  "/card/8.jpeg",
-  "/card/9.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.34 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.35 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.35 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.36 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.36 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.37 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.38 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.38 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.39 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.39 PM (2).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.39 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.40 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.40 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.41 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.41 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.42 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.42 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.43 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.43 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.44 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.44 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.45 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.45 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.46 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.46 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.47 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.47 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.48 PM (1).jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.48 PM.jpeg",
-  "/card/WhatsApp Image 2025-09-26 at 4.27.49 PM.jpeg",
-];
-
 const SLIDE_INTERVAL = 5000; // auto-slide every 5 seconds
 
 const navigationItems = [

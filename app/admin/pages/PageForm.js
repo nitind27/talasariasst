@@ -11,12 +11,40 @@ export default function PageForm() {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerList, setViewerList] = useState([]);
   const [viewerIndex, setViewerIndex] = useState(0);
+  const [migrating, setMigrating] = useState(false);
 
   async function load() {
     const r = await fetch("/api/pages", { cache: "no-store" });
     setItems(await r.json());
   }
   useEffect(() => { load(); }, []);
+
+  async function migrateImages() {
+    if (!confirm("This will copy all default images from public folder to tem/pages and add them to database. Continue?")) {
+      return;
+    }
+    setMigrating(true);
+    try {
+      const res = await fetch("/api/pages/migrate", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        await load();
+        Swal.fire({
+          icon: "success",
+          title: "Migration successful",
+          text: `${data.imagesCount} images migrated successfully`,
+          timer: 2000,
+          showConfirmButton: false,
+        });
+      } else {
+        Swal.fire({ icon: "error", title: "Migration failed", text: data.error || "Please try again" });
+      }
+    } catch (error) {
+      Swal.fire({ icon: "error", title: "Migration failed", text: error.message });
+    } finally {
+      setMigrating(false);
+    }
+  }
 
   function handleImageSelect(e) {
     const files = Array.from(e.target.files || []);
@@ -169,6 +197,25 @@ export default function PageForm() {
 
   return (
     <div className="space-y-8">
+      {/* Migration Button */}
+      {items.length === 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-semibold text-blue-900">Migrate Default Images</h3>
+              <p className="text-xs text-blue-700 mt-1">Copy existing images from public folder to database</p>
+            </div>
+            <button
+              onClick={migrateImages}
+              disabled={migrating}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {migrating ? "Migrating..." : "Migrate Images"}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">{editing ? "Edit Page" : "Create Page"}</h2>
