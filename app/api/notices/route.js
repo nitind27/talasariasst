@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPool } from "../../../lib/db";
-import { saveFileToUploads } from "../../../lib/upload";
+import { saveFileToUploads, saveMultipleToTem } from "../../../lib/upload";
 
 export const dynamic = "force-dynamic";
 
@@ -23,14 +23,57 @@ export async function POST(req) {
     const expiry = form.get("expiry") || null;
 
     const pdfFile = form.get("pdf");
-    const imageFile = form.get("image");   // keep images in images_json
-    const videoFile = form.get("video");   // store in video_url
+    const videoFile = form.get("video");
+
+    // Handle multiple images
+    const imageFiles = form.getAll("images"); // Get all image files
+    const imageOrderStr = form.get("imageOrder"); // Get the order JSON string
+    
+    let imageUrls = [];
+    if (imageFiles && imageFiles.length > 0) {
+      // Filter out empty files
+      const validFiles = imageFiles.filter(f => f && f.size > 0);
+      if (validFiles.length > 0) {
+        // Save all images to tem folder (they're saved in upload order)
+        const uploadedUrls = await saveMultipleToTem(validFiles);
+        
+        // Apply ordering if provided
+        if (imageOrderStr) {
+          try {
+            const order = JSON.parse(imageOrderStr);
+            if (Array.isArray(order)) {
+              // New format: array of {type, index} objects
+              if (order.length > 0 && typeof order[0] === "object" && order[0].type) {
+                order.forEach((item) => {
+                  if (item.type === "new" && item.index >= 0 && item.index < uploadedUrls.length) {
+                    imageUrls.push(uploadedUrls[item.index]);
+                  }
+                });
+              } else if (typeof order[0] === "number") {
+                // Old format: array of indices
+                const reordered = order.map(idx => uploadedUrls[idx]).filter(Boolean);
+                imageUrls = reordered.length === uploadedUrls.length ? reordered : uploadedUrls;
+              } else {
+                imageUrls = uploadedUrls;
+              }
+            } else {
+              imageUrls = uploadedUrls;
+            }
+          } catch (e) {
+            // If parsing fails, use original order
+            console.error("Error parsing image order:", e);
+            imageUrls = uploadedUrls;
+          }
+        } else {
+          imageUrls = uploadedUrls;
+        }
+      }
+    }
 
     const pdf_url = await saveFileToUploads(pdfFile, "pdfs");
-    const image_url = await saveFileToUploads(imageFile, "images");
     const video_url = await saveFileToUploads(videoFile, "videos");
 
-    const images_json = JSON.stringify(image_url ? [image_url] : []);
+    const images_json = JSON.stringify(imageUrls);
 
     const pool = getPool();
     const [res] = await pool.query(
@@ -38,72 +81,8 @@ export async function POST(req) {
       [title, description, images_json, video_url, pdf_url, expiry || null]
     );
 
-    return NextResponse.json({ id: res.insertId, video_url, image_url, pdf_url }, { status: 201 });
+    return NextResponse.json({ id: res.insertId, video_url, images: imageUrls, pdf_url }, { status: 201 });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
-}
-
-export async function PUT(req, { params }) {
-  try {
-    const form = await req.formData();
-    const title = form.get("title");
-    const description = form.get("description");
-    const expiry = form.get("expiry");
-
-    const pdfFile = form.get("pdf");
-    const imageFile = form.get("image");
-    const videoFile = form.get("video");
-
-    const pool = getPool();
-    const [rows] = await pool.query("SELECT * FROM notices WHERE id = ? LIMIT 1", [params.id]);
-    if (!rows.length) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    const old = rows[0];
-
-    const oldImages = old.images_json ? JSON.parse(old.images_json) : [];
-    const oldImage = Array.isArray(oldImages) && oldImages.length ? oldImages[0] : null;
-    const oldVideo = old.video_url || null;
-
-    const newPdfUrl = pdfFile ? await saveFileToUploads(pdfFile, "pdfs") : old.pdf_url;
-
-    let image_url = oldImage;
-    if (imageFile) {
-      const saved = await saveFileToUploads(imageFile, "images");
-      if (oldImage && oldImage !== saved) await deleteUploadByRelUrl(oldImage);
-      image_url = saved;
-    }
-    const images_json = JSON.stringify(image_url ? [image_url] : []);
-
-    let video_url = oldVideo;
-    if (videoFile) {
-      const savedVid = await saveFileToUploads(videoFile, "videos");
-      if (oldVideo && oldVideo !== savedVid) await deleteUploadByRelUrl(oldVideo);
-      video_url = savedVid;
-    }
-
-    await pool.query(
-      "UPDATE notices SET title=?, description=?, images_json=?, video_url=?, pdf_url=?, expiry=? WHERE id=?",
-      [title, description, images_json, video_url, newPdfUrl, expiry || null, params.id]
-    );
-
-    return NextResponse.json({ ok: true, video_url, image_url, pdf_url: newPdfUrl });
-  } catch (e) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
-  }
-}
-
-export async function DELETE(_req, { params }) {
-  const pool = getPool();
-  const [rows] = await pool.query("SELECT images_json, video_url, pdf_url FROM notices WHERE id = ? LIMIT 1", [params.id]);
-  const r = rows && rows[0];
-  if (r) {
-    const imgs = r.images_json ? JSON.parse(r.images_json) : [];
-    for (const u of Array.isArray(imgs) ? imgs : []) {
-      if (u) await deleteUploadByRelUrl(u);
-    }
-    if (r.video_url) await deleteUploadByRelUrl(r.video_url);
-    if (r.pdf_url) await deleteUploadByRelUrl(r.pdf_url);
-  }
-  await pool.query("DELETE FROM notices WHERE id = ?", [params.id]);
-  return NextResponse.json({ ok: true });
 }

@@ -12,7 +12,7 @@ const images = [
   "/card/3.jpeg",
   "/card/4.jpeg",
   "/card/5.jpeg",
-  "/card/6.jpeg",
+  "/card/6.jpeg", 
   "/card/7.jpeg",
   "/card/8.jpeg",
   "/card/9.jpeg",
@@ -69,6 +69,43 @@ const FullPageImageSliderWithCard = () => {
   // Notices state for modal
   const [notices, setNotices] = useState([]);
   const [modalReady, setModalReady] = useState(false);
+  const [images, setImages] = useState([]); // Dynamic images from API
+
+  // Fetch pages (slider images) from API
+  useEffect(() => {
+    fetch("/api/pages", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((pages) => {
+        // Filter active pages and extract all images
+        const activePages = pages.filter(p => p.status === 1);
+        const allImages = [];
+        
+        activePages.forEach((page) => {
+          if (page.images && Array.isArray(page.images)) {
+            allImages.push(...page.images);
+          }
+        });
+        
+        // Set images - use API images if available, otherwise fallback
+        if (allImages.length > 0) {
+          setImages(allImages);
+        } else {
+          // Fallback to default images
+          setImages([
+            "/Slider/imgslider.jpeg",
+            "/card/1.jpeg",
+          ]);
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching pages:", err);
+        // Fallback to default images on error
+        setImages([
+          "/Slider/imgslider.jpeg",
+          "/card/1.jpeg",
+        ]);
+      });
+  }, []);
 
   useEffect(() => {
     // fetch notices on mount and open modal immediately
@@ -90,13 +127,14 @@ const FullPageImageSliderWithCard = () => {
   }, []);
 
   useEffect(() => {
+    if (images.length === 0) return;
     resetTimeout();
     timeoutRef.current = setTimeout(
       () => setCurrent((prev) => (prev === images.length - 1 ? 0 : prev + 1)),
       SLIDE_INTERVAL
     );
     return () => resetTimeout();
-  }, [current]);
+  }, [current, images.length]);
 
   const resetTimeout = () => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -104,11 +142,8 @@ const FullPageImageSliderWithCard = () => {
 
   const goToSlide = (idx) => setCurrent(idx);
 
-  // Handle click with glow animation then redirect
   const handleClick = (href, index) => {
     setClickedIndex(index);
-
-    // Duration matches animation duration below (300ms)
     setTimeout(() => {
       setClickedIndex(null);
       router.push(href);
@@ -118,48 +153,34 @@ const FullPageImageSliderWithCard = () => {
   return (
     <div className="home-container">
       {/* Slides */}
-      <div
-        className="slides-container"
-        style={{ transform: `translateX(-${current * 100}vw)` }}
-      >
-                {images.map((img, idx) => (
-          <div
-            key={idx}
-            className="slide"
-            style={{ backgroundImage: `url("${img}")` }}
-          />
-        ))}
-      </div>
-
-      {/* Arrows */}
-      {/* <div className="arrows-container">
-        <button
-          className="arrow-button"
-          onClick={() => setCurrent(current === 0 ? images.length - 1 : current - 1)}
-          aria-label="Previous Slide"
+      {images.length > 0 && (
+        <div
+          className="slides-container"
+          style={{ transform: `translateX(-${current * 100}vw)` }}
         >
-          &#8592;
-        </button>
-        <button
-          className="arrow-button"
-          onClick={() => setCurrent(current === images.length - 1 ? 0 : current + 1)}
-          aria-label="Next Slide"
-        >
-          &#8594;
-        </button>
-      </div> */}
+          {images.map((img, idx) => (
+            <div
+              key={idx}
+              className="slide"
+              style={{ backgroundImage: `url("${img}")` }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Dots */}
-      <div className="dots-container">
-        {images.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goToSlide(i)}
-            className={`dot-button ${i === current ? "active" : "inactive"}`}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
-      </div>
+      {images.length > 0 && (
+        <div className="dots-container">
+          {images.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goToSlide(i)}
+              className={`dot-button ${i === current ? "active" : "inactive"}`}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Floating Card */}
       <div className="floating-card-container">
@@ -186,9 +207,9 @@ const FullPageImageSliderWithCard = () => {
         </div>
       </div>
 
-      {/* Notice Modal: open on mount with API-fed data */}
+      {/* Notice Modal */}
       {modalReady && (
-        <div className="hidden">{/* keeps DOM neat; modal renders portal */}
+        <div className="hidden">
           <NoticeModal initialNotices={notices} openOnMount={true} autoOpen={false} showLauncherButton={false} />
         </div>
       )}

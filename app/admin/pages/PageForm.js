@@ -2,26 +2,22 @@
 import { useEffect, useMemo, useState } from "react";
 import Swal from "sweetalert2";
 
-export default function NoticeForm() {
+export default function PageForm() {
   const [items, setItems] = useState([]);
-  const [editing, setEditing] = useState(null); // id | null
+  const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [imagePreviews, setImagePreviews] = useState([]); // Array of { file: File, preview: string, id: string }
+  const [imagePreviews, setImagePreviews] = useState([]);
   const [draggedIndex, setDraggedIndex] = useState(null);
-
-  // fullscreen viewer
   const [viewerOpen, setViewerOpen] = useState(false);
   const [viewerList, setViewerList] = useState([]);
   const [viewerIndex, setViewerIndex] = useState(0);
 
-  // fetch list
   async function load() {
-    const r = await fetch("/api/notices", { cache: "no-store" });
+    const r = await fetch("/api/pages", { cache: "no-store" });
     setItems(await r.json());
   }
   useEffect(() => { load(); }, []);
 
-  // Handle multiple image selection
   function handleImageSelect(e) {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -33,10 +29,9 @@ export default function NoticeForm() {
     }));
 
     setImagePreviews((prev) => [...prev, ...newPreviews]);
-    e.target.value = ""; // Reset input
+    e.target.value = "";
   }
 
-  // Remove image preview
   function removeImagePreview(id) {
     setImagePreviews((prev) => {
       const item = prev.find((p) => p.id === id);
@@ -45,7 +40,6 @@ export default function NoticeForm() {
     });
   }
 
-  // Drag and drop handlers
   function handleDragStart(e, index) {
     setDraggedIndex(index);
     e.dataTransfer.effectAllowed = "move";
@@ -73,7 +67,6 @@ export default function NoticeForm() {
     setDraggedIndex(null);
   }
 
-  // submit (create/update)
   async function onSubmit(e) {
     e.preventDefault();
     setLoading(true);
@@ -81,8 +74,6 @@ export default function NoticeForm() {
     const formEl = e.currentTarget;
     const form = new FormData(formEl);
     
-    // Separate new files and existing URLs, maintaining order
-    // Track which positions are existing vs new
     const imageOrder = [];
     imagePreviews.forEach((preview, index) => {
       if (preview.file) {
@@ -94,18 +85,16 @@ export default function NoticeForm() {
       }
     });
 
-    // Add image order as JSON
     form.append("imageOrder", JSON.stringify(imageOrder));
 
     const method = editing ? "PUT" : "POST";
-    const url = editing ? `/api/notices/${editing}` : "/api/notices";
+    const url = editing ? `/api/pages/${editing}` : "/api/pages";
 
     const res = await fetch(url, { method, body: form });
     setLoading(false);
 
     if (res.ok) {
       formEl.reset();
-      // Clean up preview URLs
       imagePreviews.forEach((p) => URL.revokeObjectURL(p.preview));
       setImagePreviews([]);
       const isEdit = Boolean(editing);
@@ -114,7 +103,7 @@ export default function NoticeForm() {
 
       Swal.fire({
         icon: "success",
-        title: isEdit ? "Notice updated" : "Notice created",
+        title: isEdit ? "Page updated" : "Page created",
         timer: 1400,
         showConfirmButton: false,
       });
@@ -124,19 +113,11 @@ export default function NoticeForm() {
     }
   }
 
-  // edit row (preload fields; files stay empty so old files are kept)
-  function startEdit(n) {
-    setEditing(n.id);
-    const f = document.getElementById("notice-form");
-    f.title.value = n.title;
-    f.description.value = n.description;
-    f.expiry.value = n.expiry ? n.expiry.substring(0, 10) : "";
-    f.pdf.value = "";
-    if (f.video) f.video.value = "";
+  function startEdit(p) {
+    setEditing(p.id);
 
-    // Load existing images as previews
-    const existingImages = (n.images || []).map((url, idx) => ({
-      file: null, // No file object for existing images
+    const existingImages = (p.images || []).map((url, idx) => ({
+      file: null,
       preview: url,
       id: `existing-${idx}-${Date.now()}`,
       isExisting: true,
@@ -146,8 +127,8 @@ export default function NoticeForm() {
   }
 
   async function deleteRow(id) {
-    if (!confirm("Delete this notice?")) return;
-    const r = await fetch(`/api/notices/${id}`, { method: "DELETE" });
+    if (!confirm("Delete this page?")) return;
+    const r = await fetch(`/api/pages/${id}`, { method: "DELETE" });
     if (r.ok) {
       setItems((prev) => prev.filter((x) => x.id !== id));
       Swal.fire({ icon: "success", title: "Deleted", timer: 1000, showConfirmButton: false });
@@ -156,22 +137,19 @@ export default function NoticeForm() {
     }
   }
 
-  async function toggleStatus(n) {
-    const next = n.status ? 0 : 1;
-    const r = await fetch(`/api/notices/${n.id}`, {
+  async function toggleStatus(p) {
+    const next = p.status ? 0 : 1;
+    const r = await fetch(`/api/pages/${p.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: next }),
     });
     if (r.ok) {
-      setItems((prev) => prev.map((x) => (x.id === n.id ? { ...x, status: next } : x)));
+      setItems((prev) => prev.map((x) => (x.id === p.id ? { ...x, status: next } : x)));
     } else {
       Swal.fire({ icon: "error", title: "Failed to update status" });
     }
   }
-
-  const now = useMemo(() => new Date(), []);
-  const isExpired = (n) => n.expiry && new Date(n.expiry) < now;
 
   function openViewer(images, i = 0) {
     setViewerList(images || []);
@@ -179,7 +157,6 @@ export default function NoticeForm() {
     setViewerOpen(true);
   }
 
-  // Cleanup preview URLs on unmount
   useEffect(() => {
     return () => {
       imagePreviews.forEach((p) => {
@@ -192,15 +169,14 @@ export default function NoticeForm() {
 
   return (
     <div className="space-y-8">
-      {/* Card: Form */}
       <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">{editing ? "Edit Notice" : "Create Notice"}</h2>
+          <h2 className="text-lg font-semibold">{editing ? "Edit Page" : "Create Page"}</h2>
           {editing && (
             <button
               onClick={() => {
                 setEditing(null);
-                const form = document.getElementById("notice-form");
+                const form = document.getElementById("page-form");
                 if (form) form.reset();
                 imagePreviews.forEach((p) => {
                   if (p.preview && !p.isExisting) URL.revokeObjectURL(p.preview);
@@ -214,31 +190,9 @@ export default function NoticeForm() {
           )}
         </div>
 
-        <form id="notice-form" onSubmit={onSubmit} className="space-y-5">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium mb-1">Notice Title</label>
-              <input
-                name="title"
-                type="text"
-                required
-                placeholder="Enter notice title"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-sm font-medium mb-1">Description</label>
-              <textarea
-                name="description"
-                rows={4}
-                required
-                placeholder="Enter brief description"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
+        <form id="page-form" onSubmit={onSubmit} className="space-y-5">
+          <div className="grid gap-4">
+            <div>
               <label className="block text-sm font-medium mb-1">Images (Multiple)</label>
               <input
                 type="file"
@@ -251,7 +205,6 @@ export default function NoticeForm() {
                 Select multiple images. Drag and drop to reorder them.
               </p>
 
-              {/* Image Preview Grid with Drag and Drop */}
               {imagePreviews.length > 0 && (
                 <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {imagePreviews.map((preview, index) => (
@@ -287,40 +240,6 @@ export default function NoticeForm() {
                 </div>
               )}
             </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Video</label>
-              <input
-                name="video"
-                id="video"
-                type="file"
-                accept="video/*"
-                className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-gray-300 file:bg-white file:px-3 file:py-1.5 file:text-sm hover:file:bg-gray-50"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Optional. If provided, it will play before images in the modal.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">PDF</label>
-              <input
-                name="pdf"
-                id="pdf"
-                type="file"
-                accept="application/pdf"
-                className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-gray-300 file:bg-white file:px-3 file:py-1.5 file:text-sm hover:file:bg-gray-50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1">Expiry Date</label>
-              <input
-                name="expiry"
-                type="date"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
-              />
-            </div>
           </div>
 
           <div className="pt-2">
@@ -329,97 +248,76 @@ export default function NoticeForm() {
               disabled={loading}
               className="inline-flex items-center justify-center rounded-md bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700 disabled:opacity-60"
             >
-              {loading ? "Saving..." : editing ? "Update Notice" : "Save Notice"}
+              {loading ? "Saving..." : editing ? "Update Page" : "Save Page"}
             </button>
           </div>
         </form>
       </div>
 
-      {/* Card: Table */}
       <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h2 className="text-lg font-semibold mb-4">All Notices</h2>
+        <h2 className="text-lg font-semibold mb-4">All Pages</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
               <tr className="text-left text-gray-500">
-                <th className="py-2 pr-4">Title</th>
-                <th className="py-2 pr-4">Expiry</th>
                 <th className="py-2 pr-4">Status</th>
                 <th className="py-2 pr-4">Images</th>
-                <th className="py-2 pr-4">PDF</th>
                 <th className="py-2 pr-4">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {items.map((n) => {
-                const expired = isExpired(n);
-                return (
-                  <tr key={n.id} className="border-t">
-                    <td className="py-2 pr-4">{n.title}</td>
-                    <td className="py-2 pr-4">{n.expiry ? new Date(n.expiry).toLocaleDateString() : "-"}</td>
-                    <td className="py-2 pr-4">
-                      <span className={`px-2 py-0.5 rounded text-xs ${n.status ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-700"}`}>
-                        {n.status ? "Active" : "Deactive"}
-                      </span>
-                      {expired && <span className="ml-2 text-xs text-red-600">Expired</span>}
-                    </td>
-                    <td className="py-2 pr-4">
-                      <div className="flex gap-1 flex-wrap">
-                        {(n.images || []).map((u, i) => (
-                          <button
-                            key={i}
-                            onClick={() => openViewer(n.images || [], i)}
-                            className="focus:outline-none"
-                          >
-                            <img src={u} alt="" className="h-8 w-8 rounded object-cover border" />
-                          </button>
-                        ))}
-                        {(!n.images || n.images.length === 0) && <span>-</span>}
-                      </div>
-                    </td>
-                    <td className="py-2 pr-4">
-                      {n.pdf_url ? (
-                        <a href={n.pdf_url} target="_blank" rel="noreferrer" className="underline">
-                          Open
-                        </a>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <td className="py-2 pr-4">
-                      <div className="flex flex-wrap gap-2">
+              {items.map((p) => (
+                <tr key={p.id} className="border-t">
+                  <td className="py-2 pr-4">
+                    <span className={`px-2 py-0.5 rounded text-xs ${p.status ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-700"}`}>
+                      {p.status ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  <td className="py-2 pr-4">
+                    <div className="flex gap-1 flex-wrap">
+                      {(p.images || []).map((u, i) => (
                         <button
-                          onClick={() => startEdit(n)}
-                          className="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200"
+                          key={i}
+                          onClick={() => openViewer(p.images || [], i)}
+                          className="focus:outline-none"
                         >
-                          Edit
+                          <img src={u} alt="" className="h-8 w-8 rounded object-cover border" />
                         </button>
-                        <button
-                          onClick={() => deleteRow(n.id)}
-                          className="px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700"
-                        >
-                          Delete
-                        </button>
-                        <button
-                          onClick={() => toggleStatus(n)}
-                          disabled={expired}
-                          className={`px-2 py-1 rounded ${
-                            n.status
-                              ? "bg-yellow-600 text-white hover:bg-yellow-700"
-                              : "bg-green-600 text-white hover:bg-green-700"
-                          } ${expired ? "opacity-50 cursor-not-allowed" : ""}`}
-                          title={expired ? "Expired – edit and set a future date to re-enable" : ""}
-                        >
-                          {n.status ? "Deactive" : "Active"}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      ))}
+                      {(!p.images || p.images.length === 0) && <span>-</span>}
+                    </div>
+                  </td>
+                  <td className="py-2 pr-4">
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        onClick={() => startEdit(p)}
+                        className="px-2 py-1 rounded bg-gray-100 hover:bg-gray-200"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteRow(p.id)}
+                        className="px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+                      >
+                        Delete
+                      </button>
+                      <button
+                        onClick={() => toggleStatus(p)}
+                        className={`px-2 py-1 rounded ${
+                          p.status
+                            ? "bg-yellow-600 text-white hover:bg-yellow-700"
+                            : "bg-green-600 text-white hover:bg-green-700"
+                        }`}
+                      >
+                        {p.status ? "Deactive" : "Active"}
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
               {items.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="py-6 text-center text-gray-500">
+                  <td colSpan={3} className="py-6 text-center text-gray-500">
                     No records
                   </td>
                 </tr>
@@ -429,7 +327,6 @@ export default function NoticeForm() {
         </div>
       </div>
 
-      {/* Fullscreen viewer */}
       {viewerOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center">
           <button
@@ -479,7 +376,6 @@ export default function NoticeForm() {
         </div>
       )}
 
-      {/* Saving overlay */}
       {loading && (
         <div className="fixed inset-0 z-40 bg-black/30 flex items-center justify-center">
           <div className="bg-white rounded-md px-4 py-3 text-sm shadow">Saving...</div>

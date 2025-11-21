@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FiMenu, FiHome, FiBell, FiSettings, FiLogOut, FiUser } from "react-icons/fi";
+import { FiMenu, FiHome, FiBell, FiSettings, FiLogOut, FiUser, FiImage } from "react-icons/fi";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: FiHome },
   { href: "/admin/notice-board", label: "Notice Board", icon: FiBell },
+  { href: "/admin/pages", label: "Slider Images", icon: FiImage },
   { href: "/admin/settings", label: "Settings", icon: FiSettings },
 ];
 
