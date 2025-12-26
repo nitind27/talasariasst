@@ -289,7 +289,7 @@ export default function NoticeForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Video</label>
+              <label className="block text-sm font-medium mb-1">Video (Optional)</label>
               <input
                 name="video"
                 id="video"
@@ -298,7 +298,7 @@ export default function NoticeForm() {
                 className="block w-full text-sm file:mr-3 file:rounded-md file:border file:border-gray-300 file:bg-white file:px-3 file:py-1.5 file:text-sm hover:file:bg-gray-50"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Optional. If provided, it will play before images in the modal.
+                Optional. If provided, it will play before images in the modal. You can submit the form with only images.
               </p>
             </div>
 

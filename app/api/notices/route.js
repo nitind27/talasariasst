@@ -71,7 +71,7 @@ export async function POST(req) {
     }
 
     const pdf_url = await saveFileToUploads(pdfFile, "pdfs");
-    const video_url = await saveFileToUploads(videoFile, "videos");
+    const video_url = (await saveFileToUploads(videoFile, "videos")) || "";
 
     const images_json = JSON.stringify(imageUrls);
 

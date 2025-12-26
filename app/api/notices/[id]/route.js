@@ -106,11 +106,11 @@ export async function PUT(req, { params }) {
 
     const images_json = JSON.stringify(imageUrls);
 
-    let video_url = oldVideo;
+    let video_url = oldVideo || "";
     if (videoFile) {
       const savedVid = await saveFileToUploads(videoFile, "videos");
       if (oldVideo && oldVideo !== savedVid) await deleteUploadByRelUrl(oldVideo);
-      video_url = savedVid;
+      video_url = savedVid || "";
     }
 
     await pool.query(
